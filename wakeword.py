@@ -1,95 +1,103 @@
+import sys
 import numpy as np
 import time
+
+try:
+    import tflite_runtime
+except ImportError:
+    try:
+        import tensorflow.lite as tflite
+        sys.modules['tflite_runtime'] = tflite
+    except ImportError:
+        print("ERROR: run: pip install tensorflow")
+        sys.exit(1)
+
+import sounddevice as sd
 from openwakeword.model import Model
-from microphone import get_mic_input, read_chunk, sample_rate 
+from microphone import sample_rate
 
-owwcall = "alexa" #going to test it with jarvis first since ill have to train it on orion and itll take time
-
-confidence_threshold = 0.2
-
+chunk = 1280
+confscore = 0.5
 cooldown = 2.0
+owwcall = "hey_jarvis" #going to test it with jarvis first since ill have to train it on orion and itll take time
 
-print("Loading model...")
+print("Loading wake word model")
 
-owwmodel = Model(wakeword_models = [owwcall], inference_framework="onnx") #using onnx since it runs on cpu and not gpu
+owwmodel = Model() # loaded all models for now, but will specify when out of testing phase
 
-print(f"Model loaded. Waiting for start call '{owwcall}'")
+detected = False
+last_trigger_time = 0
 
-def beep(): #plays a quick beep to show that the model heard the name call
+def audio_callback(indata, frames, time_info, status):
+    global detected, last_trigger_time
+
+    if status:
+        print(status)
+
+    audio_frame = indata[:, 0] # flattens audio to 16 bit 
+
+    prediction = owwmodel.predict(audio_frame)
+
+    for model_name, confidence in prediction.items():
+        if confidence > 0.1:
+            print(f"Score[{owwcall}]: {confidence:.3f}", end="\r")
+        
+        now = time.time()
+
+        if confidence >= confscore and (now - last_trigger_time) > cooldown:
+            last_trigger_time = now
+            detected = True
+            print(f"\nCall Detected: {owwcall} (Score: {confidence:.3f})")
+
+
+def listen_for_audio(stream=None): #this is the main lsiten function that will call the model when someone says hey_jarvis
+    global detected
+    detected = False
+
+    with sd.InputStream(samplerate = sample_rate, channels = 1, dtype = 'int16', callback=audio_callback, blocksize = chunk):
+        print("Listening for call")
+        while not detected:
+            sd.sleep(100)
+
+def beep():
     import pyaudio
+    duration = 0.15
+    hz = 900
+    audio=pyaudio.PyAudio()
+    
+    stream = audio.open(format = pyaudio.paFloat32, channels=1, rate=sample_rate, output = True)
+    
+    t = np.linspace(0, duration, int(sample_rate * duration))
+    b = (np.sin(2 * np.pi * hz * t) * 0.25).astype (np.float32) # sine wave for audio files, stole from previous code
 
-    beep_duration = 0.15
-    beep_HZ = 900
+    fade = int(len(b) * 0.2)
 
-    audio = pyaudio.PyAudio()
-    stream = audio.open(format = pyaudio.paFloat32, channels = 1, rate = sample_rate, output = True)
+    b[-fade:] *= np.linspace(1,0,fade)
 
-    #sine wave for the beep essentially
-    t = np.linspace(0, beep_duration, int(sample_rate*beep_duration))
-    beep = (np.sin(2 * np.pi * beep_HZ * t) * 0.25).astype(np.float32)
+    stream.write(b.tobytes())
 
-    fade_samples = int(len(beep) * 0.2)
-    beep[-fade_samples:] *= np.linspace(1, 0, fade_samples)
-
-    stream.write(beep.tobytes())
     stream.stop_stream()
+
     stream.close()
+
     audio.terminate()
 
 
-def listen_for_call(stream): #this is the main lsiten function that will call the model when someone says hey_jarvis
-    
-    last_trigger_time = 0
-
-    while True:
-
-        audio_chunk = read_chunk(stream)
-
-        prediction = owwmodel.predict(audio_chunk)
-        
-        print(prediction)
-
-        confscore = prediction.get('alexa', 0.0)
-
-        if confscore > 0.05:
-            print(f"Wake score: {confscore:.3f}", end="\r")
-
-        now = time.time()
-        if confscore >= confidence_threshold and (now-last_trigger_time) > cooldown:
-            last_trigger_time = now
-            print(f"\n Call detected. (Score: {confscore:.3f})")
-            beep()
-            return
-
-
-#testing time :)
-
 def test_model():
-
-    stream, audio_interface = get_mic_input()
-
     try:
         for i in range(3):
-            print(f"\nTest {i+1}/3 ")
-            listen_for_call(stream)
-            print(f"Trigger {i+1} confirmed")
+            print(f"\nTest{i+1}/3")
+            listen_for_audio()
+            print(f"Trigger{i+1} confirmed")
+            beep()
             time.sleep(1)
-
-        print("\nAll triggers confirmed")
+        print("\nall triggers confirmed")
     
-    except KeyboardInterrupt: #if user presses ctrl+c it quits
-        print("\n\nStopped")
-    
-
-    finally:
-        stream.stop_stream()
-        stream.close()
-        audio_interface.terminate()
-
+    except KeyboardInterrupt:
+        print("\nStopped")
 
 if __name__ == "__main__":
     test_model()
-
 
 
 

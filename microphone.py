@@ -26,8 +26,7 @@ def get_mic_input(): #gets microphone input
 def read_chunk(stream):
     raw = stream.read(chunk_size, exception_on_overflow=False)#exception on overflow basically keeps the audio from crashing 
 
-    audio_np = np.frombuffer(raw, dtype=np.int16).astype(np.float32)
-    audio_np /= 32768.0
+    audio_np = np.frombuffer(raw, dtype=np.int16)
 
     return audio_np
 

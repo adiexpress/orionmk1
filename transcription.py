@@ -14,7 +14,14 @@ print("Whisper Model Loaded")
 
 
 def transcribe(audio_array):
+    audio_array = audio_array.astype(np.float32)
+    
+    if np.max(np.abs(audio_array)) > 1.0:
+        audio_array /= 32768.0
+
+    
     segments, info = whisper_model.transcribe(audio_array, language = language, beam_size = 3, vad_filter = True, vad_parameters = {"min_silence_duration_ms" : 300,} )
+
 
     full_text = "".join(segment.text for segment in segments)
     full_text = full_text.strip().lower()

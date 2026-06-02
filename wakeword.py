@@ -35,7 +35,7 @@ def audio_callback(indata, frames, time_info, status):
     if status:
         print(status)
 
-    audio_frame = indata[:, 0] # flattens audio to 16 bit 
+    audio_frame = indata[:, 0].copy() # flattens audio to 16 bit 
 
     prediction = owwmodel.predict(audio_frame)
 

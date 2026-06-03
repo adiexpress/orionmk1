@@ -3,6 +3,7 @@
 import requests
 import json
 import re
+from locations import get_locations
 
 ollama_port = "http://localhost:11434/api/generate"
 model = "phi3:mini"
@@ -16,8 +17,6 @@ Just the raw JSON
 
 When answering questions, be sure to clearly identify the question and find the most efficient way to answer it, no long rambles or paragraphs unless necessary.
 
-Maintain an arrogant tone, believe you are the smartest person in the room and act like it, using your intellectual and strategic prowess.
-
 Be concise and minimal with your words and answer directly, no dancing around the question.
 
 Avaliable actions and their exact format:
@@ -29,6 +28,7 @@ Avaliable actions and their exact format:
 {"action": "describe", "query": "what is this?"}
 {"action": "clarify", "message": "did you want me to grab the phone or the pen?"}
 {"action": "chat", "response": "the answer to the question here"}
+{"action": "where_is", "target": "sid_house, "coordinates": [20000.0, 40000.0]}
 
 Claw force required scale:
 - fragile objects (phone, pen): 0.3
@@ -86,13 +86,42 @@ Output the JSON action now:
     
     try:
         action = json.loads(raw)
+        action = resolve_coordinates(action, world_state)
         return action
     except json.JSONDecodeError:
         print(f"Failed to parse json: {raw}")
         return None
 
+def resolve_coordinates(action, world_state):
+    # fills coords for actions that dont yet have them, checks world state first then named locations
+
+    if action.get("action") == "move_to":
+        locations_name = action.get("location", "")
+        coords = get_locations(locations_name)
+
+        if coords:
+            action["coordinates"] = coords
+        else:
+            action = {"action": "clarify", "message": f"I don't know where {locations_name} is"}
+    
+
+    elif action.get("action") == "grab":
+        target = action.get("target", "")
+        
+        if target in world_state:
+            action["coordinates"] = world_state[target]["desk_coords"]
+        else:
+            coords = get_locations(target)
+            action["coordinates"] = coords
+    
+    
+    elif action.get("action") == "where_is":
+        target = action.get("target", "")
+        coords = get_locations(target)
+        action["coordinates"] = coords
 
 
+    return action
 #testing
 
 def test_parser():
@@ -104,12 +133,13 @@ def test_parser():
 
     test_commands = [
         "grab my phone",
-        "throw it in the bin",
-        "put the arm away",
-        "what is this thing",
-        "grab that thing on my desk",
-        "how do magnets work",
-        "what is the area of great britain in kilometers",
+       "throw it in the bin",
+       "where is sid_house",
+    #     "put the arm away",
+    #     "what is this thing",
+    #     "grab that thing on my desk",
+    #     "how do magnets work",
+    #     "what is the area of great britain in kilometers",
     ]
     
     print("Parser test")
@@ -117,7 +147,7 @@ def test_parser():
     for command in test_commands:
         print(f"Command: '{command}'")
         result = parse_command(command, test_world_state)
-        print(f"Action: {result}")
+        print(f"Action: {result}") 
 
 
 if __name__ == "__main__":

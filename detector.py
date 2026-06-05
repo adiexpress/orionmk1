@@ -20,7 +20,7 @@ name_mapping = {"person" : "person",
 #detecting objects via webcam;
 def detect_objects(frame):
     
-    results = model(frame)
+    results = model(frame, verbose=False)
     detections = []
     world_state = {}
     
@@ -64,9 +64,7 @@ def main():
 
         
         cv2.imshow("ORION", frame)
-        
-        if detections:
-            print("Detections:", detections) #if there are detections, print them 
+         
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

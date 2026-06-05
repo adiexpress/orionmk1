@@ -6,6 +6,8 @@ from microphone import get_mic_input, record_audio
 
 record_duration = 5.0
 
+silence = 1
+
 def voice_command():
 
     stream, audio_interface = get_mic_input()
@@ -17,7 +19,7 @@ def voice_command():
 
             print("What is your command: ")
 
-            audio = record_audio(stream, record_duration)
+            audio = record_audio(stream, record_duration, silence)
 
             command = transcribe(audio)
 
@@ -45,7 +47,7 @@ def loop_run():
 
             print("Say your command: ")
 
-            audio = record_audio(stream, record_duration)
+            audio = record_audio(stream, record_duration, silence)
 
             command = transcribe(audio)
 

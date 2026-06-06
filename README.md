@@ -8,9 +8,9 @@ The arm mounts under kitchen cabinets above a multi-monitor desk on a 78-inch MG
 
 The spine is cable-tendon driven — 3 Dyneema UHMWPE cables (65-80lb, ~0.4mm) run through PTFE-lined channels in 9 triangular PETG segments, pulled by 3 MG996R base servos for full 3D motion. Each segment is an equilateral triangle (70mm sides, 35mm body) with M4 RC rod-end ball joints alternating 90 degrees per segment. Total reach: ~19.5 inches
 
-This project is driven on a few AI Models: Whisper, by OpenAI for the language transcription when a user asks a question, YOLOV8 by Ultralytics for the object tracking and detection, and OpenWakeWord which is the key tool behind the "Hey ORION" activation call. 
+This project is driven on a few AI Models: Whisper, by OpenAI for the language transcription when a user asks a question, YOLOV8 by Ultralytics for the object tracking and detection, OpenWakeWord which is the key tool behind the "Hey ORION" activation call, and LLaVA Phi 3 for the live object description in the webcam whenever a user uses the "describe" action
 
-Orion runs on Mistral (7b parameters version) by Mistral AI essentially is the framework for all the reasoning and computing done by the model. 
+Orion runs on Qwen 2.5 3B parameters version by Alibaba and essentially it is the framework for all the reasoning and computing done by the model. 
 
 ##How the pipeline works:
 

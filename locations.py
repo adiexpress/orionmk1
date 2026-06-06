@@ -40,7 +40,7 @@ def add_location():
                 print("No locations saved")
             else:
                 for i, coords in locations.items():
-                    print(f"{n}: {coords}")
+                    print(f"{i}: {coords}")
             continue
         
         if not name:

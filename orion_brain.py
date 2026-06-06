@@ -2,6 +2,7 @@
 #main file that wires everything together(voice, parsing, action handling)
 #run this file to start orion
 
+import json
 import cv2
 import threading
 from voice import voice_command
@@ -9,6 +10,8 @@ from parser import parse_command
 from detector import detect_objects, model, name_mapping, priority_objects #bruh
 from speech import speak
 from conversion import load_homo_matrix, pixel_conversion, box_center
+from visiondescribe import describe_webcam
+import time
 
 #global world state, all parse calls read from this so the arm always has a current position
 world_state = {}
@@ -52,10 +55,13 @@ def handle_action(action):
     elif action_type == "stow":
         speak("[STOW] stowing arm")
     
+   #added describe webcam function so that orion actually sees what is on the desk and describes it
     elif action_type == "describe":
-        query = action.get("query")
-        speak(f"{query}")
-        print(f"[DESCRIBE] query ='{query}'")
+        query = action.get("query", "What do you see?")
+        speak("Let me take a look")
+        answer = describe_webcam(query)
+        speak(answer)
+        print(f"[DESCRIBE] {answer}'")
     
     elif action_type == "clarify":
         message = action.get("message")
@@ -97,8 +103,11 @@ def voice_command_loop():
     speak("Welcome home sir")
     print("Say wake word + command. Ctrl+C to stop\n")
 
+
     try:
         while camera_running:
+
+
             # printing current world_state
             print(f"Current world state: {list(world_state.keys())}")
 
@@ -138,28 +147,33 @@ def main():
 
     try:
         while camera_running:
+
+
             ret, frame = cap.read()
             if not ret:
                 continue
+            try:
+                frame, detections, new_state = detect_objects(frame)
 
-            frame, detections, new_state = detect_objects(frame)
+                # update world state with desk coords
+                for obj_name, data in new_state.items():
+                    cx, cy = box_center(data["bbox"])
+                    desk_x, desk_y = pixel_conversion(cx, cy, H)
+                    new_state[obj_name]["desk_coords"] = [desk_x, desk_y]
 
-            # update world state with desk coords
-            for obj_name, data in new_state.items():
-                cx, cy = box_center(data["box"])
-                desk_x, desk_y = pixel_conversion(cx, cy, H)
-                new_state[obj_name]["desk_coords"] = [desk_x, desk_y]
+                # Safely hand off state data to the background voice loop
+                world_state = new_state
 
-            # Safely hand off state data to the background voice loop
-            world_state = new_state
+                # Show camera feed safely on the main OS thread
+                cv2.imshow("ORION Vision", frame)
 
-            # Show camera feed safely on the main OS thread
-            cv2.imshow("ORION Vision", frame)
+                # Handle windows/macOS keyboard break safely
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    camera_running = False
+                    break
+            except Exception as e:
+                pass
 
-            # Handle windows/macOS keyboard break safely
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                camera_running = False
-                break
 
     except KeyboardInterrupt:
         print("\nStopping via terminal interrupt...")

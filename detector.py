@@ -37,11 +37,11 @@ def detect_objects(frame):
                 fname = name_mapping[label]
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
             
-            world_state[fname] = {"box" : [x1,y1,x2,y2], "confidence": round(confidence, 2)} #creates the world state var
+                world_state[fname] = {"bbox" : [x1,y1,x2,y2], "confidence": round(confidence, 2)} #creates the world state var
             
-            detections.append((fname, confidence))
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, f"{fname} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                detections.append((fname, confidence))
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f"{fname} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         
     return frame, detections, world_state
 

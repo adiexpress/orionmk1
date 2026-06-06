@@ -18,10 +18,9 @@ def pixel_conversion(px,py,H): #px and py are the pixel coords we are trying to 
 
     return real_x, real_y
 
-def box_center(box):
+def box_center(bbox):
    #gets the center pixel to use for the template measurement
-    
-    x1, y1, x2, y2 = box
+    x1, y1, x2, y2 = bbox
     return (x1+x2)//2, (y1+y2)//2
 
 

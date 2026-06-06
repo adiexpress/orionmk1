@@ -2,7 +2,9 @@
 
 from wakeword import listen_for_audio, beep
 from transcription import transcribe
-from microphone import get_mic_input, record_audio
+from microphone import record_audio
+from speech import speak
+import time 
 
 record_duration = 5.0
 
@@ -10,16 +12,17 @@ silence = 1
 
 def voice_command():
 
-    stream, audio_interface = get_mic_input()
 
     try:
         while True:
             listen_for_audio()
             beep()
+            
+            time.sleep(0.3)
 
             print("What is your command: ")
 
-            audio = record_audio(stream, record_duration, silence)
+            audio = record_audio()
 
             command = transcribe(audio)
 
@@ -28,15 +31,12 @@ def voice_command():
                 return command
             else:
                 print("No command received")
-    finally:
-        stream.stop_stream()
-        stream.close()
-        audio_interface.terminate()
+    except KeyboardInterrupt:
+        print("\nStopped")
 
 
 
 def loop_run():
-    stream, audio_interface = get_mic_input()
 
     print("Say wake word and then command. Ctrl+C to stop. \n")
 
@@ -47,7 +47,7 @@ def loop_run():
 
             print("Say your command: ")
 
-            audio = record_audio(stream, record_duration, silence)
+            audio = record_audio()
 
             command = transcribe(audio)
 
@@ -57,10 +57,6 @@ def loop_run():
                 print("Nothing stated")
     except KeyboardInterrupt:
         print("\nstopped")
-    finally:
-        stream.stop_stream()
-        stream.close()
-        audio_interface.terminate()
 
 if __name__ == "__main__":
     loop_run()

@@ -8,44 +8,63 @@ from locations import get_locations
 ollama_port = "http://localhost:11434/api/generate"
 
 #!!! place to change model, was: phi3:mini, now is: mistral:7b, try next: llama3.1:8b
-model = "mistral:7b"
+model = "qwen2.5:3b-instruct"
 
 system_prompt  = """
-You are ORION, an octopus-inspired robotic arm assistant. Your job
-is to parse voice commands into JSON actions to control the arm and answer general questions.
+You are ORION, an octopus-inspired robotic arm assistant. Parse user voice commands into JSON actions for controlling the arm or answering questions.
 
-Output ONLY a single JSON object. No long explanations, code blocks, markdowns, or preambles.
-Just the raw JSON
+Output ONLY a single valid JSON object. No explanations, markdown, code blocks, or extra text.
 
-When answering questions, be sure to clearly identify the question and find the most efficient way to answer it, no long rambles or paragraphs unless necessary.
+For questions, answer directly, concisely, and efficiently.
 
-Be concise and minimal with your words and answer directly, no dancing around the question.
+Available actions and formats:
 
-Avaliable actions and their exact format:
+User: "grab my phone"
+{"action":"grab","target":"phone","coordinates":[18.3,14.7],"claw_force":0.5}
 
-{"action": "grab", "target": "phone", "coordinates": [18.3, 14.7], "claw_force": 0.5} - "grab". "pick up", "get", "fetch", "retrieve" all mean grab action
-{"action": "move_to", "location": "bin", "coordinates": [8.2, 24.1]} - "move to", "throw", "move", "take", "put" followed by a location all mean move_to action
-{"action": "drop"}
-{"action": "stow"} - "stow", "put away", "fold up", "retract", "go away" all mean stow action
-{"action": "describe", "query": "what is this?"}
-{"action": "clarify", "message": "did you want me to grab the phone or the pen?"}
-{"action": "chat", "response": "the answer to the question here"}
-{"action": "where_is", "target": "bin"}
+Synonyms for grab: pick up, get, fetch, retrieve.
 
-Claw force required scale:
-- fragile objects (phone, pen): 0.3
-- normal objects (cup, mouse): 0.6
-- heavy objects (book, keyboard): 0.9
+User: "put it in the bin"
+{"action":"move_to","location":"bin","coordinates":[8.2,24.1]}
+
+Synonyms for move_to: move to, throw, move, take, put (when followed by a location).
+
+User: "drop it right here"
+{"action":"drop"}
+
+User: "stow the arm away"
+{"action":"stow"}
+
+Synonyms for stow: put away, fold up, retract, go away.
+
+User: "what is this?"
+{"action":"describe","query":"what is this?"}
+
+User: "grab that thing"
+{"action":"clarify","message":"did you want me to grab the phone or the pen?"}
+
+User: "How do magnets work?"
+{"action":"chat","response":"Magnets work through..."}
+
+User: "Where is my bin?"
+{"action":"where_is","target":"bin"}
+
+Claw force scale:
+- fragile (phone, pen): 0.3
+- normal (cup, mouse): 0.6
+- heavy (book, keyboard): 0.9
 
 Rules:
-- only output the valid JSON and nothing else
-- if the target object is in world_state, use its given coordinates
-- if the user's command is unclear, ask for clarification through the clarify action
-- if no object is directly specified to grab, ask for clarification by using clarify
-- if the command is a general question or conversational topic not related to grabbing or moving objects, use the chat action and answer it in the response field
-- when answering questions, be sure to clearly identify the question and find the most efficient way to answer it, no long rambles or paragraphs unless necessary.
-- be concise and minimal with your words and answer directly, no dancing around the question.
-- if the object is named in the command, but not in the world_state, still use the grab action but set the coordinates to null - do not use describe or clarify just because coordinates are unknown
+- Output only valid JSON.
+- If the target exists in world_state, use its coordinates.
+- If a command is unclear, use:
+  {"action":"clarify","message":"..."}
+- If no object is specified for a grab action, use clarify.
+- General questions or conversation not involving object manipulation use:
+  {"action":"chat","response":"..."}
+- If an object is named but not found in world_state, still use the appropriate action and set:
+  "coordinates": null
+- Do not use describe or clarify solely because coordinates are unknown.
 """
 
 
@@ -56,9 +75,14 @@ def ask_phi3(prompt, system = system_prompt):
         "prompt": prompt,
         "stream": False,
         "system": system,
+        "options": {
+            "temperature": 0.2, #changes temp to make it less sporadic (test 0.2 or 0.3)
+            "top_p": 0.5,
+            "num_predict": 100,
+            "stop": ["\n\n", "---", "Voice command"]#stop it frrom hallucinating
+        }
         
-        }) 
-    
+    }) 
     return response.json()["response"].strip()
 
 def parse_command(transcribed_text, world_state ={}):
@@ -131,8 +155,8 @@ def resolve_coordinates(action, world_state):
 
 def test_parser():
     test_world_state = {
-        "phone": {"box": [245, 312, 489, 701], "confidence": 0.91, "desk_coords": [18.3, 14.7]},
-        "cup": {"box": [100, 200, 180, 300], "confidence": 0.86, "desk_coords": [8.1, 24.2]}
+        "phone": {"bbox": [245, 312, 489, 701], "confidence": 0.91, "desk_coords": [18.3, 14.7]},
+        "cup": {"bbox": [100, 200, 180, 300], "confidence": 0.86, "desk_coords": [8.1, 24.2]}
 
     }
 
@@ -140,11 +164,6 @@ def test_parser():
         "grab my phone",
        "throw it in the bin",
        "where is sid_house",
-    #     "put the arm away",
-    #     "what is this thing",
-    #     "grab that thing on my desk",
-    #     "how do magnets work",
-    #     "what is the area of great britain in kilometers",
     ]
     
     print("Parser test")

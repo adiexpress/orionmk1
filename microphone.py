@@ -1,46 +1,32 @@
-import pyaudio as pya
-import numpy as np
+import numpy as np #numpy must be first
+import sounddevice as sd
 
 sample_rate = 16000
 chunk_size = 1280
-
 channels = 1
-format = pya.paInt16 #16 bit audio samps
 
-def get_mic_input(): #gets microphone input
-    audio = pya.PyAudio()
+def get_mic_input():
+    print("Mic inputs: ")
+    print(f"Using mic input: {sd.query_devices(kind='input')['name']}")
+    print(f"Mic ready at {sample_rate} HZ")
 
-    print("mic inputs: ") # prints avaliable microphone input options so user makes sure they choose the correct one
-    for i in range(audio.get_device_count()):
-        device = audio.get_device_info_by_index(i)
-        if device["maxInputChannels"] > 0:
-            print(f"[{i}] {device['name']}")
-    
+def read_chunk(stream = None):
 
-    stream = audio.open(format=format, channels = channels, rate = sample_rate, input = True, frames_per_buffer = chunk_size)
+    audio = sd.rec(chunk_size, samplerate=sample_rate, channels=channels, dtype = 'float32', blocking=True)
 
-    print(f"\n Mic opened at {sample_rate}HZ, {chunk_size} frames")
-    
-    return stream, audio
+    return audio.flatten()
 
-def read_chunk(stream):
-    raw = stream.read(chunk_size, exception_on_overflow=False)#exception on overflow basically keeps the audio from crashing 
-
-    audio_np = np.frombuffer(raw, dtype=np.int16).copy()
-
-    return audio_np
-
-def record_audio(stream, duration, silence_duration):
-    
+def record_audio(stream = None, duration = 10.0, silence_duration = 1.0):
     needed_chunks = int((sample_rate * duration) / chunk_size)
     silence_chunks = int((sample_rate * silence_duration) / chunk_size)
+    
     chunks = []
     silent_count = 0
 
     print("Recording until you stop talking")
 
     for x in range(needed_chunks):
-        chunk = read_chunk(stream)
+        chunk = read_chunk()
         chunks.append(chunk)
 
         volume = np.max(np.abs(chunk))
@@ -56,4 +42,12 @@ def record_audio(stream, duration, silence_duration):
 
     print("Recording finished")
     return np.concatenate(chunks)
+
+
+
+
+
+
+
+
 

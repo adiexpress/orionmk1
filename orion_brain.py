@@ -4,7 +4,7 @@
 
 import json
 import cv2
-import threading
+import multiprocessing as mp
 from voice import voice_command
 from parser import parse_command
 from detector import detect_objects, model, name_mapping, priority_objects #bruh
@@ -12,6 +12,8 @@ from speech import speak
 from conversion import load_homo_matrix, pixel_conversion, box_center
 from visiondescribe import describe_webcam
 import time
+import sounddevice as sd
+
 
 #global world state, all parse calls read from this so the arm always has a current position
 world_state = {}
@@ -32,7 +34,11 @@ def handle_action(action):
     if action_type == "grab":
         target = action.get("target")
         coords = action.get("coordinates")
-        force = action.get("claw_force")
+        force = action.get("claw_force", 0.5)
+
+        if not target: #handles grab even with no target
+            speak("Please specify target")
+            return
         
         #handles grab even when coords are null
         if coords is None:
@@ -46,30 +52,43 @@ def handle_action(action):
     elif action_type == "move_to":
         location = action.get("location")
         coords = action.get("coordinates")
+        
+        if coords is None:
+            speak(f"Please specify where {location} is")
+            return
+        
         speak(f"Moving object to {location}")
         print(f"[MOVE] location = {location} coords = {coords}")
     
     elif action_type == "drop":
-        speak("[DROP] dropping object")
+        speak("dropping object")
+        print("[DROP] dropping object")
     
     elif action_type == "stow":
-        speak("[STOW] stowing arm")
-    
+        speak("Stowing arm")
+        print("[STOW] stowing arm")
+
    #added describe webcam function so that orion actually sees what is on the desk and describes it
     elif action_type == "describe":
         query = action.get("query", "What do you see?")
         speak("Let me take a look")
-        answer = describe_webcam(query)
-        speak(answer)
-        print(f"[DESCRIBE] {answer}'")
+        try:
+            answer = describe_webcam(query)
+            speak(answer)
+            print(f"[DESCRIBE] {answer}'")
+        except Exception as e:
+            speak("I couldn't access camera")
+            print("Describe failed")
     
     elif action_type == "clarify":
-        message = action.get("message")
+        message = action.get("message", "Could you repeat that")
         speak(f"{message}")
         print(f"[CLARIFY] {message}")
 
     elif action_type == "chat":
-        response = action.get("response")
+        response = action.get("response", "")
+        if not response:
+            speak("I'm not quite sure")
         speak(f"{response}")
         print(f"[CHAT] {response}")
 
@@ -81,7 +100,7 @@ def handle_action(action):
         coords = get_locations(target)
 
         if coords:
-            speak(f"{target} is at {coords}")
+            speak(f"{target} is at {coords[0]} centimeters by {coords[1]} centimeters")
         else:
             speak(f"No {target} location saved")
 
@@ -91,100 +110,123 @@ def handle_action(action):
         speak(f"[UNKNOWN] {action}")
 
 #camera thread function
-H = load_homo_matrix()
-camera_running = True
-world_state = {}  # Initialized world state
+#  # Initialized world state
 
+#main file
+def main():
 
-# 1. MOVED TO BACKGROUND: Voice listening and command execution
-def voice_command_loop():
-    global camera_running, world_state
+    state_queue = mp.Queue(maxsize = 10)
 
+    #camera runs in its own process
+    camera_process = mp.Process(target = camera_loop, args = (state_queue,), daemon = True)
+    camera_process.start()
+
+    world_state = {}
+
+    time.sleep(1)
+    
+    
     speak("Welcome home sir")
     print("Say wake word + command. Ctrl+C to stop\n")
 
 
     try:
-        while camera_running:
-
-
-            # printing current world_state
+        while True:
+            while not state_queue.empty():
+                try:
+                    world_state = state_queue.get_nowait()
+                except:
+                    pass
+                # printing current world_state
             print(f"Current world state: {list(world_state.keys())}")
 
-            # listen for voice command
+                # listen for voice command
             command = voice_command()
+                
             if not command:
                 continue
 
+            while not state_queue.empty():
+                try:
+                    world_state = state_queue.get_nowait()
+                except:
+                    pass
+                
             print(f"\nParsing: '{command}'")
 
-            # parse command with current world state
-            action = parse_command(command, world_state)
+            try:
+                action = parse_command(command, world_state)
+                if action is None:
+                    speak("Clarify action")
+                    continue
+                    
+                handle_action(action)
 
-            # after parsing the action, making sure the model knows what to do for each one
-            handle_action(action)
+            except Exception as e:
+                print(f"[ERROR] {e}")
+                speak("Error parsing")
+
             print()
 
     except KeyboardInterrupt:
         camera_running = False
-        speak("\n\nOrion Stopped")
+        speak("Orion Stopped")
+        return
 
-
-# 2. KEPT ON MAIN THREAD: OpenCV GUI and Frame Capture
-def main():
+#camera loop (no webcam so no need to be on main)
+def camera_loop(state_queue):
     global world_state, camera_running
-
+    
+    H = load_homo_matrix()
+    camera_running = True
+    world_state = {} 
+    
     cap = cv2.VideoCapture(0)
+
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'NV12'))
+    
     if not cap.isOpened():
         print("Error: could not open camera")
         return
 
     print("Camera started")
 
-    # Start the voice command system in the background thread
-    voice_thread = threading.Thread(target=voice_command_loop, daemon=True)
-    voice_thread.start()
+    while camera_running:
+        ret, frame = cap.read()
+        if not ret:
+            continue
+            
+        try:
+            frame, detections, new_state = detect_objects(frame)
 
-    try:
-        while camera_running:
-
-
-            ret, frame = cap.read()
-            if not ret:
-                continue
-            try:
-                frame, detections, new_state = detect_objects(frame)
-
-                # update world state with desk coords
-                for obj_name, data in new_state.items():
-                    cx, cy = box_center(data["bbox"])
-                    desk_x, desk_y = pixel_conversion(cx, cy, H)
-                    new_state[obj_name]["desk_coords"] = [desk_x, desk_y]
+            # update world state with desk coords
+            for obj_name, data in new_state.items():
+                if "bbox" not in data:
+                    continue
+                cx, cy = box_center(data["bbox"])
+                desk_x, desk_y = pixel_conversion(cx, cy, H)
+                new_state[obj_name]["desk_coords"] = [desk_x, desk_y]
 
                 # Safely hand off state data to the background voice loop
                 world_state = new_state
 
-                # Show camera feed safely on the main OS thread
-                cv2.imshow("ORION Vision", frame)
-
-                # Handle windows/macOS keyboard break safely
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    camera_running = False
-                    break
-            except Exception as e:
+            try:
+                state_queue.put_nowait(new_state)
+            except:
                 pass
 
-
-    except KeyboardInterrupt:
-        print("\nStopping via terminal interrupt...")
-    finally:
-        camera_running = False
+        except Exception as e:
+            pass
+            
+            time.sleep(0.05)
+        
         cap.release()
-        cv2.destroyAllWindows()
-        speak("\n\nOrion Stopped")
-
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn", force = True)
     main()
 
 

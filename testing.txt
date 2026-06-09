@@ -1,0 +1,180 @@
+
+GRAB ACTION:
+-1.
+Command: 'grab my phone'
+Parsing: 'grab my phone'
+raw output: {"action":"grab","target":"phone","coordinates":[null],"claw_force":0.6}
+[ORION]: Grabbing phone
+[GRAB] target = phone coords = [2.4, 6.0] force = 0.6
+
+-2.
+Command: 'grab my water bottle'
+Parsing: 'grab my water bottle'
+raw output: {"action":"grab","target":"water bottle","coordinates":[null],"claw_force":0.6}
+[ORION]: I can't see your water bottle right now
+[GRAB] target = water bottle coords = None force = 0.6
+
+-3. 
+Command: 'fetch my phone.'
+Parsing: 'fetch my phone.'
+raw output: {"action":"grab","target":"phone","coordinates":[null],"claw_force":0.6}
+[ORION]: Grabbing phone
+[GRAB] target = phone coords = [2.4, 6.0] force = 0.6
+
+MOVE TO ACTION
+-1.
+Command: 'move it to the bin.'
+Parsing: 'move it to the bin.'
+raw output: {"action":"move_to","location":"bin","coordinates":[16.0,1.0]}
+[ORION]: Moving object to bin
+[MOVE] location = bin coords = [27.0, 19.6]
+
+-2.
+Command: 'move it to the trash can.'
+Parsing: 'move it to the trash can.'
+raw output: {"action":"move_to","location":"trash can","coordinates":[16.0,1.0]}
+[ORION]: I don't know where trash can is
+[CLARIFY] I don't know where trash can is
+
+-3. 
+Command: 'take it to the bin'
+Parsing: 'take it to the bin'
+raw output: {"action":"move_to","location":"person","coordinates":[16.0,1.0]}
+[ORION]: I don't know where person is
+[CLARIFY] I don't know where person is
+
+DROP ACTION:
+
+-1.
+Command: 'drop it'
+Parsing: 'drop it'
+raw output: {"action":"drop"}
+[ORION]: dropping object
+[DROP] dropping object
+
+-2.
+Command: 'drop there right here.'
+Parsing: 'drop there right here.'
+raw output: {"action":"move_to","location":"there right here","coordinates":[16.0,1.0]}
+[ORION]: I don't know where there right here is
+[CLARIFY] I don't know where there right here is
+
+STOW ACTION:
+
+-1.
+Command: 'stow your arm.'
+Parsing: 'stow your arm.'
+raw output: {"action":"stow"}
+[ORION]: Stowing arm
+[STOW] stowing arm
+
+-2.
+Command: 'put your arm away'
+Parsing: 'put your arm away'
+raw output: {"action":"stow"}
+[ORION]: Stowing arm
+[STOW] stowing arm
+
+DESCRIBE ACTION (with webcam)(takes long time to answer)
+
+(correct answer: a person with dark hair and dark features, black tank top, gold earrings in both ears + gold chain, handsome :)
+
+-1.
+Command: 'what do you see in the webcam right now?'
+Parsing: 'what do you see in the webcam right now?'
+raw output: {"action":"describe","query":"what do you see in the webcam right now?"}
+[ORION]: Let me take a look
+[ORION]: In the image, a young man is sitting on a chair with his mouth closed. He has dark hair and is wearing earrings in both ears. His attire consists of a black tank top and a gold chain necklace. A red book can be seen behind him, along with some other items including a white cord. The room he's in has a window, suggesting it could be daytime outside.
+[DESCRIBE] In the image, a young man is sitting on a chair with his mouth closed. He has dark hair and is wearing earrings in both ears. His attire consists of a black tank top and a gold chain necklace. A red book can be seen behind him, along with some other items including a white cord. The room he's in has a window, suggesting it could be daytime outside.'
+
+-2. Command: 'describe the webcam.' 
+Parsing: 'describe the webcam.'
+raw output: {"action":"chat","response":"The webcam is located on the desk."}
+[ORION]: The webcam is located on the desk.
+[CHAT] The webcam is located on the desk.
+
+(showing iphone to the camera and asking orion to tell me what object it is)
+
+-3.
+Command: 'can you tell me what this object is?'
+Parsing: 'can you tell me what this object is?'
+raw output: {"action":"describe","query":"what is this?"}
+[ORION]: Let me take a look
+[ORION]: The image is a black and white photograph that captures a close-up view of an object in the shadows. The subject appears to be dark and indistinct, with only its edge faintly visible due to the contrast between it and the surrounding darkness. The background presents a stark, empty expanse devoid of any discernible features or objects.
+The overall composition of the image is simple yet evocative, creating an atmosphere of mystery and intrigue. The absence of color focuses the viewer's attention on the shapes and textures within the frame, while the play of light and shadow adds depth and dimension to the scene.
+As for identifying the specific subject in the image, it is challenging due to its indistinct nature and limited visibility. It could potentially be a person or an animal, but without further context or details, it's impossible to confidently determine what the subject represents.
+
+-4.
+Command: 'what object am i holding right now?'
+Parsing: 'what object am i holding right now?'
+raw output: {"action":"describe","query":"what object am i holding right now?"}
+[ORION]: Let me take a look
+[ORION]: If I'm looking at a screen with a black background, there would be no objects to hold. However, if we're talking about the photo itself, you can see your hand holding a phone in the image. The background of the image is black as well, which makes it difficult to discern what lies beneath.
+[DESCRIBE] If I'm looking at a screen with a black background, there would be no objects to hold. However, if we're talking about the photo itself, you can see your hand holding a phone in the image. The background of the image is black as well, which makes it difficult to discern what lies beneath.'
+
+CLARIFY ACTION (NEED TO FIX!!)
+
+-1.
+Command: 'uh, how do i solve this thing over here?'
+Parsing: 'uh, how do i solve this thing over here?'
+raw output: {"action":"clarify","message":"did you mean to ask how to solve a problem on your desk?"}
+[ORION]: did you mean to ask how to solve a problem on your desk?
+[CLARIFY] did you mean to ask how to solve a problem on your desk?
+
+-2.
+Command: 'can you clarify this for me?'
+Parsing: 'can you clarify this for me?'
+raw output: {"action":"clarify","message":"did you mean to clarify something in the current world state?"}
+[ORION]: did you mean to clarify something in the current world state?
+[CLARIFY] did you mean to clarify something in the current world state?
+
+uses describe too much when it should be using clarify (need to differeniate more)
+
+CHAT ACTION:
+
+-1. 
+Command: 'how do i solve this rubik's cube?'
+Parsing: 'how do i solve this rubik's cube?'
+raw output: {"action":"chat","response":"Solving a Rubik's Cube involves several steps including identifying the color of each face and solving one layer at a time using algorithms. Would you like to know more about specific algorithms or techniques?"}
+[ORION]: Solving a Rubik's Cube involves several steps including identifying the color of each face and solving one layer at a time using algorithms. Would you like to know more about specific algorithms or techniques?
+[CHAT] Solving a Rubik's Cube involves several steps including identifying the color of each face and solving one layer at a time using algorithms. Would you like to know more about specific algorithms or techniques?
+
+-2.
+Command: 'do you like tiktok?'
+Parsing: 'do you like tiktok?'
+raw output: {"action":"chat","response":"I am a robotic arm assistant and do not have preferences or emotions like humans. How can I assist you today?"}
+[ORION]: I am a robotic arm assistant and do not have preferences or emotions like humans. How can I assist you today?
+[CHAT] I am a robotic arm assistant and do not have preferences or emotions like humans. How can I assist you today?
+
+-3
+Command: 'how does the world work?'
+Parsing: 'how does the world work?'
+raw output: {"action":"chat","response":"The world works through a complex system of physical laws and principles that governs everything from atoms to galaxies."}
+[ORION]: The world works through a complex system of physical laws and principles that governs everything from atoms to galaxies.
+[CHAT] The world works through a complex system of physical laws and principles that governs everything from atoms to galaxies.
+
+WHERE IS ACTION:
+
+-1. 
+Command: 'where's the bin?'
+Parsing: 'where's the bin?'
+raw output: {"action":"where_is","target":"bin"}
+[ORION]: bin is at [27.0, 19.6]
+[WHERE IS] target = bin coords = [27.0, 19.6]
+
+-2.
+Command: 'where's my phone?'
+Parsing: 'where's my phone?'
+raw output: {"action":"where_is","target":"phone"}
+[ORION]: phone is at [2.4, 6.0]
+[WHERE IS] target = phone coords = [2.4, 6.0]
+Current world state: ['person']
+
+-3.
+Command: 'where's my rubik's cube?'
+Parsing: 'where's my rubik's cube?'
+raw output: {"action":"where_is","target":"rubik's cube"}
+[ORION]: No rubik's cube location saved
+[WHERE IS] target = rubik's cube coords = None
+
+

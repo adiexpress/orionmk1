@@ -1,5 +1,6 @@
 from faster_whisper import WhisperModel
 import numpy as np
+import sounddevice as sd
 
 whisper_size = "base" #using actual hardware ill use tiny, but using base for testing currently
 
@@ -31,17 +32,15 @@ def transcribe(audio_array):
 #testing
 
 def test_transcription():
+   
+    from microphone import record_audio
     
-    from microphone import get_mic_input, record_audio
-
-    stream, audio_interface = get_mic_input()
-
     try:
         print("\nTranscription test started")
 
         for i in range(3):
             input(f"\nTest{i+1}/3. Press Enter to speak")
-            audio = record_audio(stream,duration=5)
+            audio = record_audio()
 
             result = transcribe(audio)
 
@@ -49,10 +48,9 @@ def test_transcription():
                 print(f"Transcribed audio: '{result}'")
             else:
                 print("Nothing transcribed")
-    finally:
-        stream.stop_stream()
-        stream.close()
-        audio_interface.terminate()
+    except Exception as e:
+        print(f"[TRANSCRIPTION ERROR]: {e}")
+        
 
 
 

@@ -9,6 +9,8 @@ import soundfile as sf
 import os
 import subprocess
 
+os.environ["HF_HUB_OFFLINE"] = "1"
+
 # 1. Initialize Kokoro Pipeline
 pipeline = KPipeline(lang_code='b')
 ORION_VOICE = 'bm_george' 
@@ -70,7 +72,7 @@ def process_audio():
     try:
         # Check if audio is ready without locking up the program
         audio_to_play = mac_audio_queue.get_nowait()
-        sd.play(audio_to_play, samplerate=24000)
+        sd.play(audio_to_play, samplerate=16000)
         sd.wait() 
         mac_audio_queue.task_done()
     except queue.Empty:

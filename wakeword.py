@@ -6,16 +6,16 @@ try:
     sys.modules['tflite_runtime'] = tflite
 except ImportError:
     print("ERROR: run: pip install tensorflow")
-    sys.exit(1)
+    pass
 
 import numpy as np
 import sounddevice as sd
 from openwakeword.model import Model
-from microphone import sample_rate
+from microphone import sample_rate, chunk_size
 import queue
 import threading
 
-chunk = 1280
+chunk = chunk_size
 
 confscore = 0.5
 
@@ -31,20 +31,7 @@ detected = False
 
 last_trigger_time = 0
 
-audio_queue = queue.Queue(maxsize=50)
-
-
-def audio_callback(indata, frames, time_info, status):
-    #copy bytes into queue
-
-    if status:
-        pass
-
-    try:
-        #copy and put in queue
-        audio_queue.put_nowait(indata[:,0].copy())
-    except queue.Full: #if queue is full, drops the frame so keeps it from crashing
-        pass
+audio_queue = queue.Queue(maxsize=100)
 
 
 def processing():
@@ -57,9 +44,8 @@ def processing():
         
         try:
             chunk = audio_queue.get(timeout=1.0)
-
             prediction = owwmodel.predict(chunk)
-            confidence = prediction.get(owwcall,0.0)
+            confidence = prediction.get(owwcall, 0.0)
 
             if confidence > 0.2:
                 print(f"Score[{owwcall}]: {confidence:.3f}", end= "\r")
@@ -80,10 +66,11 @@ def processing():
 
 
 
-def listen_for_audio(stream=None): #this is the main listen function that will call the model when someone says hey_jarvis
+def listen_for_audio(record_seconds = 5.0): #this is the main listen function that will call the model when someone says hey_jarvis
     global detected
-    detected = False
     
+    detected = False
+
     owwmodel.reset() #resets internal state so test runs dont bleed into each other sort of
 
     while not audio_queue.empty():
@@ -97,15 +84,42 @@ def listen_for_audio(stream=None): #this is the main listen function that will c
     
     time.sleep(1)
 
-    with sd.InputStream(samplerate = sample_rate, channels = 1, dtype = 'float32', callback=audio_callback, blocksize = chunk):
-        print("Listening for call")
+    record_chunks = int((sample_rate * record_seconds) / chunk)
+
+    print("Listening for call")
+
+    stream = sd.InputStream(samplerate=sample_rate, channels = 1, dtype = 'float32', blocksize = chunk_size)
+    stream.start()
+
+    try:    
         while not detected:
-            sd.sleep(100)
+            raw, _ = stream.read(chunk_size)
+            chunk_int = (raw[:,0] * 32768).astype(np.int16)
+
+            try:
+                audio_queue.put_nowait(chunk_int)
+            except queue.Full:
+                pass
+    
+        beep()
+        print("What is your command: ")
+
+        record_chunks = int((sample_rate * record_seconds) / chunk_size)
+        recorded = []
+
+        for _ in range(record_chunks):
+            raw, _ = stream.read(chunk_size)
+            recorded.append(raw[:,0].astype(np.float32))
+    finally:
+        stream.stop()
+        stream.close()
+
+    if recorded:
+        return np.concatenate(recorded)
+    return None
+
 
 def beep():
-    import numpy as np #numpy must be first
-    import sounddevice as sd 
-
     duration = 0.15
     hz = 900
    
@@ -113,7 +127,7 @@ def beep():
     t = np.linspace(0, duration, int(sample_rate * duration))
     b = (np.sin(2 * np.pi * hz * t) * 0.3).astype(np.float32) # sine wave for audio files, stole from previous code
 
-    sd.play(b, samplerate=16000)
+    sd.play(b, samplerate=sample_rate)
     sd.wait()
 
 
@@ -123,9 +137,10 @@ def test_model():
     try:
         for i in range(3):
             print(f"\nTest{i+1}/3")
-            listen_for_audio()
-            print(f"Trigger{i+1} confirmed")
-            beep()
+            audio = listen_for_audio()
+            if audio is not None:
+                print(f"Trigger{i+1} confirmed")
+                beep()
             time.sleep(2)
         print("\nall triggers confirmed")
     

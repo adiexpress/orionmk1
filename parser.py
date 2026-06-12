@@ -27,7 +27,7 @@ Synonyms for grab: pick up, get, fetch, retrieve.
 User: "put it in the bin"
 {"action":"move_to","location":"bin","coordinates":[8.2,24.1]}
 
-Synonyms for move_to: move to, throw, move, take, put (when followed by a location).
+Synonyms for move_to: move to, throw, move, take it, put, (use these when followed by a location).
 
 User: "drop it right here"
 {"action":"drop"}
@@ -65,6 +65,7 @@ Rules:
 - If an object is named but not found in world_state, still use the appropriate action and set:
   "coordinates": null
 - Do not use describe or clarify solely because coordinates are unknown.
+- If you have a question about something, use clarify, not chat
 """
 
 

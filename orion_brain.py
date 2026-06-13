@@ -173,57 +173,42 @@ def main():
         speak("Orion Stopped")
         return
 
-#camera loop (no webcam so no need to be on main)
+#camera loop with tri camera setup (replace detect_objects with multi_detector)
+from camera import CameraSystem
+from multi_detector import run_detection, load_all_homographies
+
 def camera_loop(state_queue):
-    global world_state, camera_running
     
-    H = load_homo_matrix()
-    camera_running = True
-    world_state = {} 
-    
-    cap = cv2.VideoCapture(0)
+    cams = CameraSystem()
+    homographies = load_all_homographies()
 
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    print("Camera process started")
 
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'NV12'))
-    
-    if not cap.isOpened():
-        print("Error: could not open camera")
-        return
-
-    print("Camera started")
-
-    while camera_running:
-        ret, frame = cap.read()
-        if not ret:
-            continue
-            
+    while True:
         try:
-            frame, detections, new_state = detect_objects(frame)
+            annotated_frames, world_state = run_detection(cams, homographies)
 
-            # update world state with desk coords
-            for obj_name, data in new_state.items():
-                if "bbox" not in data:
-                    continue
-                cx, cy = box_center(data["bbox"])
-                desk_x, desk_y = pixel_conversion(cx, cy, H)
-                new_state[obj_name]["desk_coords"] = [desk_x, desk_y]
-
-                # Safely hand off state data to the background voice loop
-                world_state = new_state
-
+            #send merged world state to main()
             try:
-                state_queue.put_nowait(new_state)
+                state_queue.put_nowait(world_state)
             except:
                 pass
 
-        except Exception as e:
-            pass
-            
-            time.sleep(0.05)
+            #show annotated frams if avaliable
+            for cam_name, frame in annotated_frames.items():
+                if frame is not None:
+                    cv2.imshow(f"ORION {cam_name}", frame)
+
+            #quit with q key
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
         
-        cap.release()
+        except Exception as e:
+            print(f"[CAMERA LOOP] {e}")
+    
+    cams.release()
+    cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     mp.set_start_method("spawn", force = True)

@@ -204,6 +204,44 @@ def _detect_hailo(frame):
     return frame, world_state, detections           
 
 
+def _detect_cpu(frame):
+    #Cpu fallback for dev mode using ultralytics 
+
+    world_state = {}
+    detections = []
+
+    results = _cpu_model(frame, verbose = True)
+
+    for result in results:
+        for box in result.boxes:
+            class_id = int(box.cls[0])
+            confidence = float(box.conf[0].item())
+            label = _cpu_model.names[class_id]
+
+            if label not in priority_objects:
+                continue
+            
+            if confidence < detection_confidence:
+                continue
+
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            friendly_name = name_mapping.get(label, label)
+
+            world_state[friendly_name] = {
+                "bbox" : [x1, y1, x2, y2],
+                "confidence": round(confidence, 2)
+
+            }
+
+            detections.append(friendly_name, confidence)
+            
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2. putText(frame, f"{friendly_name} {confidence:.2f}", (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+
+    return detections, frame, world_state
+
+
 
 
 

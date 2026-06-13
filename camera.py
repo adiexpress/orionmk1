@@ -75,7 +75,8 @@ class CameraSystem:
         if self.right_cam.isOpened():
             print("Dev right camera started (index 1)")
         else:
-            print("[CAMERA] No camera at index 0")
+            print("[CAMERA] No camera at index 1")
+            self.right_cam = None
 
         self.claw_cam = None
         print("No claw cam in dev mode")
@@ -114,8 +115,8 @@ class CameraSystem:
         }
 
     def release(self):
-        if is_pi:
-            if self.claw_cam:
+        if self.claw_cam:
+            if is_pi:
                 self.claw_cam.stop()
             else:
                 self.claw_cam.release()
@@ -132,7 +133,7 @@ def test_cameras():
 
     print("Camera system test\n")
 
-    cams = CameraSystem
+    cams = CameraSystem()
     frames = cams.get_all_frames()
 
     for name, frame in frames.items():

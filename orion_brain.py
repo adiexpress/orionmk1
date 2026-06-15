@@ -7,19 +7,18 @@ import cv2
 import multiprocessing as mp
 from voice import voice_command
 from parser import parse_command
-from detector import detect_objects, model, name_mapping, priority_objects #bruh
 from speech import speak
-from conversion import load_homo_matrix, pixel_conversion, box_center
 from visiondescribe import describe_webcam
 import time
 import sounddevice as sd
+from serial_controller import controller #serial_controller
 
 
 #global world state, all parse calls read from this so the arm always has a current position
 world_state = {}
 
 #action handler
-def handle_action(action):
+def handle_action(action, claw_frame = None):
 
     #recieves an action dict that tells it what to do and does it
     #for now it just prints what happnes
@@ -45,7 +44,7 @@ def handle_action(action):
             speak(f"I can't see your {target} right now")
         else:
             speak(f"Grabbing {target}")
-
+            controller.grab_sequence(coords[0], coords[1], force)
 
         print(f"[GRAB] target = {target} coords = {coords} force = {force}")
 
@@ -58,14 +57,17 @@ def handle_action(action):
             return
         
         speak(f"Moving object to {location}")
+        controller.grab_sequence(coords[0], coords[1], force = 0.5)
         print(f"[MOVE] location = {location} coords = {coords}")
     
     elif action_type == "drop":
         speak("dropping object")
+        controller.drop_sequence()
         print("[DROP] dropping object")
     
     elif action_type == "stow":
         speak("Stowing arm")
+        controller.stow()
         print("[STOW] stowing arm")
 
    #added describe webcam function so that orion actually sees what is on the desk and describes it
@@ -73,12 +75,12 @@ def handle_action(action):
         query = action.get("query", "What do you see?")
         speak("Let me take a look")
         try:
-            answer = describe_webcam(query)
+            answer = describe_webcam(query, frame = claw_frame)
             speak(answer)
             print(f"[DESCRIBE] {answer}'")
         except Exception as e:
             speak("I couldn't access camera")
-            print("Describe failed")
+            print(f"Describe failed: {e}")
     
     elif action_type == "clarify":
         message = action.get("message", "Could you repeat that")
@@ -116,12 +118,15 @@ def handle_action(action):
 def main():
 
     state_queue = mp.Queue(maxsize = 10)
+    claw_queue = mp.Queue(maxsize=2) #maxsize is 2 because the queue needs to keep refilling otherwise itll overflow
 
     #camera runs in its own process
-    camera_process = mp.Process(target = camera_loop, args = (state_queue,), daemon = True)
+    camera_process = mp.Process(target = camera_loop, args = (state_queue, claw_queue,), daemon = True)
     camera_process.start()
 
     world_state = {}
+
+    latest_claw_frame = None
 
     time.sleep(1)
     
@@ -132,11 +137,19 @@ def main():
 
     try:
         while True:
+            
             while not state_queue.empty():
                 try:
                     world_state = state_queue.get_nowait()
                 except:
                     pass
+              #drain claw queue again to keep latest frame  
+            while not claw_queue.empty():
+                try: 
+                    latest_claw_frame = claw_queue.get_nowait()
+                except:
+                    pass  
+                
                 # printing current world_state
             print(f"Current world state: {list(world_state.keys())}")
 
@@ -151,6 +164,13 @@ def main():
                     world_state = state_queue.get_nowait()
                 except:
                     pass
+
+            #drain again after voice command
+            while not claw_queue.empty():
+                try:
+                    latest_claw_frame = claw_queue.get_nowait()
+                except:
+                    pass
                 
             print(f"\nParsing: '{command}'")
 
@@ -160,7 +180,7 @@ def main():
                     speak("Clarify action")
                     continue
                     
-                handle_action(action)
+                handle_action(action, latest_claw_frame)
 
             except Exception as e:
                 print(f"[ERROR] {e}")
@@ -169,7 +189,6 @@ def main():
             print()
 
     except KeyboardInterrupt:
-        camera_running = False
         speak("Orion Stopped")
         return
 
@@ -177,7 +196,7 @@ def main():
 from camera import CameraSystem
 from multi_detector import run_detection, load_all_homographies
 
-def camera_loop(state_queue):
+def camera_loop(state_queue, claw_queue):
     
     cams = CameraSystem()
     homographies = load_all_homographies()
@@ -193,6 +212,22 @@ def camera_loop(state_queue):
                 state_queue.put_nowait(world_state)
             except:
                 pass
+
+            #send the latest claw frame to main process
+            claw_frame = cams.get_claw_frame()
+            if claw_frame is not None:
+                #drain claw_queue first
+                while not claw_queue.empty():
+                    try:
+                        claw_queue.get_nowait()
+                    except:
+                        pass
+                
+                #put the frame into the queue
+                try:
+                    claw_queue.put_nowait(claw_frame)
+                except:
+                    pass
 
             #show annotated frams if avaliable
             for cam_name, frame in annotated_frames.items():

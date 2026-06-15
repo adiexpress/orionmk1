@@ -8,8 +8,12 @@ import time
 import soundfile as sf
 import os
 import subprocess
+import platform
+import pyttsx3 #python text-to-speech built in library
 
 os.environ["HF_HUB_OFFLINE"] = "1"
+
+is_mac = platform.system() == "Darwin"
 
 # 1. Initialize Kokoro Pipeline
 pipeline = KPipeline(lang_code='b')
@@ -50,21 +54,32 @@ def speak(text):
     """
     print(f"[ORION]: {text}")
     
-    try:
-        generator = pipeline(text, voice=ORION_VOICE)
-        for i, (_, _, audio) in enumerate(generator):
-            if audio is not None and len(audio) > 0:
-                # Create a unique temporary file path for this chunk
-                file_path = f"orion_temp_{threading.get_ident()}_{i}.wav"
-                
-                # Save the numpy array as a standard WAV file (Kokoro is 24000Hz)
-                sf.write(file_path, audio, 24000)
-                
-                # Hand it over to a safe background thread to play via afplay
-                threading.Thread(target=_play_audio_file, args=(file_path,), daemon=True).start()
-                
-    except Exception as e:
-        print(f"[KOKORO ERROR] {e}")
+    if is_mac:
+        try:
+            generator = pipeline(text, voice=ORION_VOICE)
+            for i, (_, _, audio) in enumerate(generator):
+                if audio is not None and len(audio) > 0:
+                    # Create a unique temporary file path for this chunk
+                    file_path = f"orion_temp_{threading.get_ident()}_{i}.wav"
+                    
+                    # Save the numpy array as a standard WAV file (Kokoro is 24000Hz)
+                    sf.write(file_path, audio, 24000)
+                    
+                    # Hand it over to a safe background thread to play via afplay
+                    threading.Thread(target=_play_audio_file, args=(file_path,), daemon=True).start()
+                    
+        except Exception as e:
+            print(f"[KOKORO ERROR] {e}")
+    else:
+        threading.Thread(target = _speak_pi, args = (text,), daemon = True).start()
+
+#for pi hardware since Kokorro isnt compatibile with pi
+def _speak_pi(text):
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 175)
+    engine.setProperty("volume", 0.9)
+    engine.say(text)
+    engine.runAndWait
 
 
 def process_audio():

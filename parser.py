@@ -77,9 +77,10 @@ def ask_phi3(prompt, system = system_prompt):
         "stream": False,
         "system": system,
         "options": {
-            "temperature": 0.2, #changes temp to make it less sporadic (test 0.2 or 0.3)
+            "temperature": 0.1, #changes temp to make it less sporadic (test 0.2 or 0.3)
             "top_p": 0.5,
             "num_predict": 100,
+            "num_ctx" : 512,
             "stop": ["\n\n", "---", "Voice command"]#stop it frrom hallucinating
         }
         
@@ -98,7 +99,7 @@ Output the JSON action now:
     raw = ask_phi3(prompt)
     print(f"raw output: {raw}")
     #strips markdown code blocks
-    raw = re.sub(r"'''json|'''", "", raw).strip()
+    raw = re.sub(r"```json|```", "", raw).strip()
 
     # extracts only the JSON object and ignores everythign after
     match = re.search(r'\{.*?\}', raw, re.DOTALL)

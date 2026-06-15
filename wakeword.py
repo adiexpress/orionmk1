@@ -5,7 +5,7 @@ try:
     import tensorflow.lite as tflite
     sys.modules['tflite_runtime'] = tflite
 except ImportError:
-    print("ERROR: run: pip install tensorflow")
+    print("[WAKEWORD tflite not found, using onnxruntime")
     pass
 
 import numpy as np
@@ -15,7 +15,7 @@ from microphone import sample_rate, chunk_size
 import queue
 import threading
 
-chunk = chunk_size
+CHUNK = chunk_size
 
 confscore = 0.5
 
@@ -84,7 +84,7 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
     
     time.sleep(1)
 
-    record_chunks = int((sample_rate * record_seconds) / chunk)
+    record_chunks = int((sample_rate * record_seconds) / CHUNK)
 
     print("Listening for call")
 

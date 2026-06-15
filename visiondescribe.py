@@ -24,6 +24,7 @@ def capture_frame():
 #main file
 #sends camera fram to LLaVA with a question, returns answer as string
 def describe_webcam(query = "what do you see on the desk?", frame = None):
+    #priority: claw cam then overhead frame
     
     if frame is None:
         frame = capture_frame()
@@ -42,8 +43,8 @@ def describe_webcam(query = "what do you see on the desk?", frame = None):
         return response["message"]["content"].strip()
         
     
-    except Exception:
-        return f"Vision error: {Exception}"
+    except Exception as e:
+        return f"Vision error: {e}"
     
     
 

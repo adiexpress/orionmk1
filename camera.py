@@ -1,13 +1,12 @@
 import cv2
 from config import is_pi
-import platform
 if is_pi:
     from picamera2 import Picamera2, Preview
 
 class CameraSystem:
     def __init__(self):
-        self.right_cam = None
-        self.left_cam = None
+        self.overhead_cam = None
+        self.base_cam = None
         self.claw_cam = None
 
         if is_pi:
@@ -18,8 +17,8 @@ class CameraSystem:
     def _init_pi(self):
         """
         Pi 5 setup:
-       -USB index 0 = left end camera
-       -USB index 1 = right end camera
+       -USB index 0 = overhead
+       -USB index 1 = base camera
        -CAM0 CSI = claw camera
         
         """
@@ -35,64 +34,64 @@ class CameraSystem:
         except Exception as e:
             print(f"[CAMERA] Claw CSI failed: {e}")
         
-        #for usb (left and right rail cams)
+        #for usb (overhead and base cams)
         try:
-            self.left_cam = cv2.VideoCapture(0)
-            if self.left_cam.isOpened():
-                print("Left rail USB camera started (index 0)")
+            self.overhead_cam = cv2.VideoCapture(0)
+            if self.overhead_cam.isOpened():
+                print("Overhead USB camera started (index 0)")
             else:
-                print("[CAMERA] Left USB failed:")
-                self.left_cam = None
+                print("[CAMERA] Overhead USB failed:")
+                self.overhead_cam = None
         except Exception as e:
-            print(f"[CAMERA Left USB failed")
+            print(f"[CAMERA Overhead USB failed: {e}")
 
         try:
-            self.right_cam = cv2.VideoCapture(1)
-            if self.right_cam.isOpened():
-                print("Right rail USB camera started (index 1)")
+            self.base_cam = cv2.VideoCapture(1)
+            if self.base_cam.isOpened():
+                print("Base USB camera started (index 1)")
             else:
-                print("[CAMERA] Left rail USB not found")
-                self.right_cam = None
+                print("[CAMERA] Base USB not found")
+                self.base_cam = None
         except Exception as e:
-            print(f"[CAMERA] Left USB failed")
+            print(f"[CAMERA] Base USB failed")
 
     def _init_mac(self):
         """
         Mac/Dev setup:
-        -Index 0 = left camera (laptop webcam)
-        -Index 1 = right camera (external webcam)
+        -Index 0 = overhead cam (laptop webcam)
+        -Index 1 = base cam (external webcam)
         -Claw cam not simulated
          
         """
-        self.left_cam = cv2.VideoCapture(0)
-        if self.left_cam.isOpened():
-            print("Dev left camera started (index 0)")
+        self.overhead_cam = cv2.VideoCapture(0)
+        if self.overhead_cam.isOpened():
+            print("Dev overhead camera started (index 0)")
         else:
             print("[CAMERA] No camera at index 0")
-            self.left_cam = None
+            self.overhead_cam = None
 
-        self.right_cam = cv2.VideoCapture(1)
-        if self.right_cam.isOpened():
-            print("Dev right camera started (index 1)")
+        self.base_cam = cv2.VideoCapture(1)
+        if self.base_cam.isOpened():
+            print("Dev base camera started (index 1)")
         else:
             print("[CAMERA] No camera at index 1")
-            self.right_cam = None
+            self.base_cam = None
 
         self.claw_cam = None
         print("No claw cam in dev mode")
 
 #_____________ Frame capture_________________
 
-    def get_left_frame(self):
-        if self.left_cam is None:
+    def get_overhead_frame(self):
+        if self.overhead_cam is None:
             return None
-        ret, frame = self.left_cam.read()
+        ret, frame = self.overhead_cam.read()
         return frame if ret else None
     
-    def get_right_frame(self):
-        if self.right_cam is None:
+    def get_base_frame(self):
+        if self.base_cam is None:
             return None
-        ret, frame = self.right_cam.read()
+        ret, frame = self.base_cam.read()
         return frame if ret else None
     
     def get_claw_frame(self):
@@ -109,8 +108,8 @@ class CameraSystem:
         
     def get_all_frames(self):
         return {
-            "left": self.get_left_frame(),
-            "right": self.get_right_frame(),
+            "overhead": self.get_overhead_frame(),
+            "base": self.get_base_frame(),
             "claw": self.get_claw_frame()
         }
 
@@ -121,10 +120,10 @@ class CameraSystem:
             else:
                 self.claw_cam.release()
 
-        if self.right_cam:
-                self.right_cam.release()
-        if self.left_cam:
-                self.left_cam.release()
+        if self.base_cam:
+                self.base_cam.release()
+        if self.overhead_cam:
+                self.overhead_cam.release()
         print("All cameras released")
 
 #testing

@@ -1,4 +1,4 @@
-from detector import detect_objects
+from hailo_detector import detect_objects
 from camera import CameraSystem
 from config import detection_confidence
 
@@ -6,7 +6,7 @@ def merge_world_states(states: list[dict]) -> dict:
     """
     Merge world states from multiple cameras
 
-    Priority: claw -> left -> right
+    Priority: overhead -> claw -> base
 
     When same object detected by multiple cameras:
     -keep highest confidence score
@@ -36,7 +36,7 @@ def merge_world_states(states: list[dict]) -> dict:
                         #averaging coordinates
                         merged[obj_name]["desk_coords"] = [
                             (existing["desk_coords"][0] + incoming["desk_coords"][0]) / 2,
-                            (existing["desk_coords"][1] + incoming("desk_coords")[1]) / 2,
+                            (existing["desk_coords"][1] + incoming["desk_coords"][1]) / 2,
                         ]
 
                     #keep higher confidence value
@@ -57,13 +57,14 @@ def run_detection(camera_system: CameraSystem, homographies: dict) -> tuple:
     annotated_frames = {}
     states = []
 
-    camera_priority = ["claw", "left", "right"]
+    camera_priority = ["overhead", "claw", "base"]
 
     for cam_name in camera_priority:
         frame = frames.get(cam_name)
 
         if frame is None:
             states.append({})
+            continue
 
         try:
             annotated, detections, world_state = detect_objects(frame)
@@ -78,7 +79,7 @@ def run_detection(camera_system: CameraSystem, homographies: dict) -> tuple:
                     cx, cy = box_center(data["bbox"])
                     desk_x, desk_y = pixel_conversion(cx, cy, H)
                     world_state[obj_name]["desk_coords"] = [desk_x, desk_y]
-                    world_state[obj_name]["desk_coords"] = cam_name
+                    world_state[obj_name]["source_camera"] = cam_name
 
             states.append(world_state)
         
@@ -99,8 +100,8 @@ def load_all_homographies():
     import os
 
     calibration_files = {
-        "left": "calibration_left.json",
-        "right": "calibration_right.json",
+        "overhead": "calibration_overhead.json",
+        "base": "calibration_base.json",
         "claw": "calibration_claw.json"
     }
 

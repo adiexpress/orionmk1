@@ -2,6 +2,7 @@ import json
 import time
 import threading
 from config import serial_port, serial_baud, serial_command
+from kinematics import desk_to_motor_functions
 
 try:
     import serial
@@ -29,17 +30,12 @@ class SerialController:
 
     SENSORS (4x FSR402)
     {"cmd" : "fsr", "finger": 0} ==> returns {"fsr": 0, "value": 412}
-    {"cmd": "tof"} ==> returns {"tof_left": 120, "tof_right" : 145}
-
-    RAIL (NEMA17 + TMC2209)
-    {"cmd": "rail", "steps": 400, "direction": "left", "speed": 800}
-    {"cmd": "rail_home"} #sends railway to home position
 
     EMERGENCY STOP:
     {"cmd": "estop"}
 
     STOW (hardcoded safe position):
-    {"cmd": "stow}
+    {"cmd": "stow"}
 
     """
     def __init__(self, port = serial_port, baud = serial_baud, command = serial_command):
@@ -74,7 +70,8 @@ class SerialController:
         if self.command:
             print(f"[SERIAL COMMAND]: {msg.strip()}")
             return True
-        if not self.command:
+        
+        if not self.connected:
             return False
         
         try:
@@ -135,74 +132,36 @@ class SerialController:
     #____________stow______________________________
    
     def stow(self):
-        #folds arm up 
-        #needs to happen before rail movement
+        #folds arm up
         return self.send({"cmd" : "stow"})
    
-    #_____________rail___________________________
-
-    def rail_home(self):
-        #returns rail to the endstop and set as zero
-        return self.send({"cmd": "rail_home"})
-    
-    def move_rail(self, steps, direction, speed = 800):
-        #moves rail
-        #steps = number of microsteps (80 microsteps at 1mm at 1/16 microstepping)
-        #speed is in microsteps per second (default is 800 which is 10 microsteps per second)
-
-        #always stow before rail moves
-        self.stow()
-        time.sleep(2)
-
-        tof = self.query_tof()
-        if tof and (tof.get("tof_left", 999) < 80 or tof.get("tof_right", 999) < 80):
-            print("[SERIAL] ToF obstacle detected - rail movement stopped")
-            return False
-        
-        return self.send({"cmd":"rail", "steps": steps, "direction": direction, "speed": speed})
-    
-    def move_rail_mm(self, mm, direction, speed = 800):
-        #move rail by millimeters (80 microsteps = 1mm)
-        steps = int(mm * 80)
-        return self.move_rail(steps, direction, speed)
-
-    #______________sensors_____________________
-    
-    def query_fsr(self, finger = 0):
-        #reads fsr value from one finger and returns a value from 0-1023
-        self.send({"cmd": "fsr", "finger": finger})
-        return self.read_response()
-    
-    def query_tof(self):
-        #read both tof obstacle sensors and returns the distance between the obstacle and the arm in mm
-        self.send({"cmd": "tof"})
-        return self.read_response()
-    
     #_____________sequences_______________________
 
-    def grab_sequence(self, rail_mm, rail_direction, tendon_angle, force = 0.5):
+    def grab_sequence(self, desk_x, desk_y, force = 0.5):
         #Grab sequence steps:
         #1. stow arm
-        #2. move rail
-        #3. open claw
-        #4. lower/extend the arm to the object
-        #5. close the claw using the correct force using feedback from the fsr finger sensors
+        #2. open claw
+        #3. lower/extend the arm to the object
+        #4. close the claw using the correct force using feedback from the fsr finger sensors
 
-        print(f"[SERIAL] Grab: rail = {rail_mm}mm {rail_direction}, tendons = {tendon_angle}, force = {force}")
+        cmds = desk_to_motor_functions(desk_x, desk_y)
+
+        print(f"[SERIAL] Grab: tendons = {cmds['tendon_angles']}, lazy susan = {cmds['lazy_susan_angle']} force = {force}")
        
         #stow first
         self.stow()
         time.sleep(2)
 
-        #move rail
-        self.move_rail_mm(rail_mm, rail_direction)
-        time.sleep(2)
+        #rotate lazy susan
+        self.rotate(cmds['lazy_susan_angle'])
+        time.sleep(1)
 
         #open claw
         self.open_claw()
         
         #extend the spine
-        self.set_all_tendons(tendon_angle)
+        self.set_all_tendons(cmds['tendon_angles'])
+        time.sleep(1.5)
 
         #close claw
         self.close_claw(force)
@@ -210,13 +169,8 @@ class SerialController:
 
         return True
     
-    def drop_sequence(self, location_rail_mm = None, location_rail_dir = None):
-        #drops object, if user asks, moves to a location first
-
-        if location_rail_mm and location_rail_dir:
-            self.move_rail_mm(location_rail_mm, location_rail_dir)
-            time.sleep(2.5)
-
+    def drop_sequence(self):
+        #drops object
         self.open_claw()
         time.sleep(1)
         self.stow()
@@ -227,12 +181,12 @@ class SerialController:
 
     def close(self):
         #close operations
-       if self.conn and self.connected:
+        if self.conn and self.connected:
             self.conn.close()
             self.connected = False
 
 #singleton
-controller = SerialController
+controller = SerialController()
 
 def test_serial():
     print("Serial Controller Test\n")
@@ -241,37 +195,26 @@ def test_serial():
     print("1. Stow")
     c.stow()
 
-    print("\n2. Rail home:")
-    c.rail_home()
-
-    print("\n3.Move rail 500mm left: ")
-    c.move_rail_mm(500, "left")
-
-    print("\n4. Set tendons: ")
+    print("\n2. Set tendons: ")
     c.set_all_tendons([45, 90, 45])
 
-    print("\n5. Close claw (gentle): ")
+    print("\n3. Close claw (gentle): ")
     c.close_claw(0.3)
 
-    print("\n6. Full grab sequence: ")
+    print("\n4. Full grab sequence: ")
     c.grab_sequence(
-        rail_mm = 300,
-        rail_direction = "left",
-        tendon_angle = [60, 90, 60],
-        force = 0.3
-
+        desk_x = 20,
+        desk_y = 20,
+        force = 0.3,
     )
           
-    print("\n7. Drop sequence: ")
-    c.drop_sequence(
-        location_rail_mm = 400,
-        location_rail_dir = "right"
-    )
+    print("\n5. Drop sequence: ")
+    c.drop_sequence()
 
-    print("\n8. Emergency stop:")
+    print("\n6. Emergency stop:")
     c.estop()
 
-    print("\n9. Close")
+    print("\n7. Close")
     c.close()
     
     print("\nAll tests passed")

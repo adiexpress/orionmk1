@@ -20,7 +20,7 @@ def click_event(event, x, y, flags, params): #records the pixel coordinates of t
 
 def save_calibration(camera_name = "main"):
     """
-    camera_name = "left", "right", or "claw"
+    camera_name = "overhead", "base", or "claw"
     saves to calibration_{camera_name}.json
     """
 
@@ -45,7 +45,7 @@ def save_calibration(camera_name = "main"):
 
     print(f"Calibration saved to {filename}")
 
-def main(): 
+def main(camera_name="main"): 
     cap = cv2.VideoCapture(0) 
     cv2.namedWindow('Calibration')
     cv2.setMouseCallback('Calibration', click_event)
@@ -77,7 +77,7 @@ def main():
         key = cv2.waitKey(1) & 0xFF
 
         if key == ord("s") and len(clicked_points) == num_points:
-            save_calibration()
+            save_calibration(camera_name)
             break
         elif key == ord("q"):
             print("Quitted")

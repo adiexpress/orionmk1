@@ -15,7 +15,7 @@ def save_locations(name, coordinates):
 
     with open(locations_file, "w") as file:
         json.dump(locations, file, indent=2)
-    print(f"saved '{name} at {coordinates}")
+    print(f"saved '{name}' at {coordinates}")
 
 def get_locations(name):
     locations = load_locations()

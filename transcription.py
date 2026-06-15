@@ -1,8 +1,7 @@
 from faster_whisper import WhisperModel
 import numpy as np
 import sounddevice as sd
-
-whisper_size = "base" #using actual hardware ill use tiny, but using base for testing currently
+from config import whisper_model as whisper_size
 
 language = "en" #english only model (may support other languages at anothet time)
 
@@ -24,7 +23,7 @@ def transcribe(audio_array):
     segments, info = whisper_model.transcribe(audio_array, language = language, beam_size = 3, vad_filter = True, vad_parameters = {"min_silence_duration_ms" : 300,} )
 
 
-    full_text = "".join(segment.text for segment in segments)
+    full_text = " ".join(segment.text for segment in segments)
     full_text = full_text.strip().lower()
 
     return full_text

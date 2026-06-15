@@ -14,8 +14,9 @@ from openwakeword.model import Model
 from microphone import sample_rate, chunk_size
 import queue
 import threading
+from speech import speak
 
-CHUNK = chunk_size
+_chunk = chunk_size
 
 confscore = 0.5
 
@@ -84,12 +85,17 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
     
     time.sleep(1)
 
-    record_chunks = int((sample_rate * record_seconds) / CHUNK)
+    record_chunks = int((sample_rate * record_seconds) / _chunk)
 
     print("Listening for call")
 
-    stream = sd.InputStream(samplerate=sample_rate, channels = 1, dtype = 'float32', blocksize = chunk_size)
-    stream.start()
+    try:
+        stream = sd.InputStream(samplerate=sample_rate, channels = 1, dtype = 'float32', blocksize = chunk_size)
+        stream.start()
+    except Exception as e:
+        print(f"[WAKEWORD] Microphone failed: {e}")
+        speak("I can't access the microphone")
+        return None
 
     try:    
         while not detected:
@@ -104,7 +110,7 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
         beep()
         print("What is your command: ")
 
-        record_chunks = int((sample_rate * record_seconds) / chunk_size)
+        record_chunks = int((sample_rate * record_seconds) / _chunk)
         recorded = []
 
         for _ in range(record_chunks):

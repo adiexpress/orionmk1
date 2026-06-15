@@ -72,7 +72,11 @@ class SerialController:
             return True
         
         if not self.connected:
-            return False
+            print("[SERIAL] Disconnected. Attempting reconnection")
+            self._connect()
+            if not self.connected:
+                print("[SERIAL] Reconnect failed")
+                return False
         
         try:
             with self._lock:

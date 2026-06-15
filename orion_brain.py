@@ -42,10 +42,16 @@ def handle_action(action, claw_frame = None):
         #handles grab even when coords are null
         if coords is None:
             speak(f"I can't see your {target} right now")
-        else:
-            speak(f"Grabbing {target}")
-            controller.grab_sequence(coords[0], coords[1], force)
-
+            return
+        if not isinstance(coords, (list, tuple)) or len(coords) < 2:
+            speak(f"I don't have a valid position for {target}")
+            return
+        if not isinstance(coords[0], (int, float)) or not isinstance(coords[1], (int, float)):
+            speak(f"Position data for {target} is invalid")
+            return
+        
+        speak(f"Grabbing {target}")
+        controller.grab_sequence(coords[0], coords[1], force)
         print(f"[GRAB] target = {target} coords = {coords} force = {force}")
 
     elif action_type == "move_to":
@@ -136,7 +142,10 @@ def main():
 
 
     try:
-        while True:
+        while True: 
+            if not camera_process.is_alive():
+                print("Camera process has stopped")
+                break
             
             while not state_queue.empty():
                 try:
@@ -246,7 +255,8 @@ def camera_loop(state_queue, claw_queue):
 
 
 if __name__ == "__main__":
-    mp.set_start_method("spawn", force = True)
+    from config import start_method
+    mp.set_start_method(start_method, force = True)
     main()
 
 

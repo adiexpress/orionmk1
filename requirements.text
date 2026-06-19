@@ -1,0 +1,28 @@
+#Core AI/ML
+faster-whisper
+ollama
+openWakeWord
+ultralytics
+
+#Camera
+picamera2; platform_machine=="aarch64"
+numpy
+opencv-python
+
+#Audio
+sounddevice
+soundfile
+
+#Speech
+kokoro
+pyttsx3
+
+#Serial
+pyserial
+
+#Utilities
+requests
+
+
+
+

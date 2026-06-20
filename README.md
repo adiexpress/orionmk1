@@ -70,7 +70,7 @@ Option 1: copy firmware.py to RP2040 using Thonny IDE ('https://thonny.org')
 Option 2: use mpremote  (run this in CLI: 'mpremote connect /dev/ttyACM0 cp firmware.py :main.py')
 
 ### Add named locations (Optional)
-run locations.py and input the name of the location + its coordinates to save it to ORION's memory
+run locations.py and input the name of the location + its coordinates to save it to ORION's memory<br>
 (run this command in the Terminal CLI)
 'python locations.py'
 

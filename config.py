@@ -17,10 +17,9 @@ ollama_url = "http://localhost:11434/api/generate"
 
 #parser options
 parser_options = {
-            "temperature": 0.1, #changes temp to make it less sporadic (test 0.2 or 0.3)
+            "temperature": 0.2, #changes temp to make it less sporadic (test 0.2 or 0.3)
             "top_p": 0.5,
             "num_predict": 100,
-            "num_ctx": 512,
             "stop": ["\n\n", "---", "Voice command"]
 }
 

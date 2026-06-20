@@ -34,6 +34,11 @@ last_trigger_time = 0
 
 audio_queue = queue.Queue(maxsize=100)
 
+SILENCE_DURATION = 1.2
+SILENCE_THRESHOLD = 0.04
+MIN_RECORD_DURATION = 0.5
+MAX_RECORD_DURATION = 12.0
+
 
 def processing():
 
@@ -85,9 +90,9 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
     
     time.sleep(1)
 
-    record_chunks = int((sample_rate * record_seconds) / _chunk)
+    recorded = []
 
-    print("Listening for call")
+    print("What is your command: ")
 
     try:
         stream = sd.InputStream(samplerate=sample_rate, channels = 1, dtype = 'float32', blocksize = chunk_size)
@@ -99,6 +104,7 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
 
     try:    
         while not detected:
+            print("Listening for call")
             raw, _ = stream.read(chunk_size)
             chunk_int = (raw[:,0] * 32768).astype(np.int16)
 
@@ -108,14 +114,29 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
                 pass
     
         beep()
-        print("What is your command: ")
 
-        record_chunks = int((sample_rate * record_seconds) / _chunk)
-        recorded = []
+        silence_chunks = int((sample_rate * SILENCE_DURATION) / _chunk)
+        max_chunks = int((sample_rate * MAX_RECORD_DURATION) / _chunk)
+        min_chunks = int((sample_rate * MIN_RECORD_DURATION) / _chunk)
 
-        for _ in range(record_chunks):
+        silent_count = 0
+
+        for _ in range(max_chunks):
             raw, _ = stream.read(chunk_size)
-            recorded.append(raw[:,0].astype(np.float32))
+            chunk_audio = raw[:,0].astype(np.float32)
+            recorded.append(chunk_audio)
+
+            volume = np.max(np.abs(chunk_audio))
+
+            if volume < SILENCE_THRESHOLD:
+                silent_count += 1
+            else:
+                silent_count = 0
+            
+            if silent_count >= silence_chunks and len(recorded) > min_chunks:
+                print("[VOICE] User silence detected, stopping recording")
+                break
+
     finally:
         stream.stop()
         stream.close()

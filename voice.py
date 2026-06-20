@@ -5,7 +5,7 @@ from transcription import transcribe
 import time
 import sounddevice as sd
 
-record_seconds = 5.0
+record_seconds = 15.0
 
 silence = 1
 
@@ -13,7 +13,7 @@ def voice_command():
 
     try:
         while True:
-            audio = listen_for_audio(record_seconds = 5.0)
+            audio = listen_for_audio()
             beep()
             
             if audio is None:
@@ -42,7 +42,7 @@ def loop_run():
 
     try:
         while True:
-            audio = listen_for_audio(record_seconds = 5.0)
+            audio = listen_for_audio()
             beep()
 
             time.sleep(0.3)

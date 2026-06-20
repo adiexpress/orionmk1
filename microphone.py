@@ -48,7 +48,7 @@ def record_audio(duration = 10.0, silence_duration = 1.0):
 
         volume = np.max(np.abs(chunk)) 
 
-        if volume < 0.04: #silent threshold, change depending on mic sensitivity
+        if volume < 0.05: #silent threshold, change depending on mic sensitivity
             silent_count += 1
         else:
             silent_count = 0 #resets silent count

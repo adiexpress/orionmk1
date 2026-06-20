@@ -39,26 +39,31 @@ After initial calibration where the cameras are trained on distict marked locati
 
 ### Requirements
 if you haven't already: download Python (coding language used for this project<br>
+<br>
 (download using the link below and following the steps)<br>
 'https://www.python.org/downloads/'<br>
 
 install all python libraries and utils needed to run ORION<br>
+<br>
 (run this command in the Terminal CLI)<br>
 'pip install -r requirements.txt'<br>
 
 ### Pull AI Models
 first, install the ollama desktop app<br>
+<br>
 (download using the link below and following the steps)<br>
 'https://ollama.com/download'<br>
 
 after downloading:<br>
 pull both AI models from ollama<br>
+<br>
 (run these commands in the Terminal CLI)<br>
 'ollama pull qwen2.5:3b-instruct'<br>
 'ollama pull llava-phi3'<br>
 
 ### Calibrate Cameras
 calibrate each of the 3 camera angles (base, overhead, claw) used for this project<br>
+<br>
 (run these commands in the Terminal CLI)<br>
 'python calibration.py overhead'<br>
 'python calibration.py base'<br>
@@ -78,11 +83,13 @@ No external dependencies: all libraries used are MicroPython built-ins<br>
 
 ### Add named locations (Optional)
 run locations.py and input the name of the location + its coordinates to save it to ORION's memory<br>
+<br>
 (run this command in the Terminal CLI)<br>
 'python locations.py'
 
 ### Run ORION
 run orion_brain.py and let the magic begin<br>
+<br>
 (run this command in Terminal CLI)<br>
 'python orion_brain.py<br>
 <br>

@@ -5,7 +5,7 @@ try:
     import tensorflow.lite as tflite
     sys.modules['tflite_runtime'] = tflite
 except ImportError:
-    print("[WAKEWORD tflite not found, using onnxruntime")
+    print("[WAKEWORD] tflite not found, using onnxruntime")
     pass
 
 import numpy as np
@@ -103,8 +103,8 @@ def listen_for_audio(record_seconds = 5.0): #this is the main listen function th
         return None
 
     try:    
+        print("Listening for call")
         while not detected:
-            print("Listening for call")
             raw, _ = stream.read(chunk_size)
             chunk_int = (raw[:,0] * 32768).astype(np.int16)
 

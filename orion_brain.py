@@ -89,7 +89,7 @@ def handle_action(action, claw_frame = None):
             print(f"Describe failed: {e}")
     
     elif action_type == "clarify":
-        message = action.get("message", "Could you repeat that")
+        message = action.get("message", "What did you mean by that")
         speak(f"{message}")
         print(f"[CLARIFY] {message}")
 

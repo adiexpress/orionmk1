@@ -16,12 +16,12 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 is_mac = platform.system() == "Darwin"
 
 # 1. Initialize Kokoro Pipeline
-pipeline = KPipeline(lang_code='b')
-ORION_VOICE = 'bm_george' 
+if is_mac:
+    pipeline = KPipeline(lang_code='b')
+    ORION_VOICE = 'bm_george' 
 
 # 2. Main Thread Queue for Mac-safe playback
 mac_audio_queue = queue.Queue()
-
 playback_lock = threading.Lock()
 
 def _play_audio_file(file_path):
@@ -79,7 +79,7 @@ def _speak_pi(text):
     engine.setProperty("rate", 175)
     engine.setProperty("volume", 0.9)
     engine.say(text)
-    engine.runAndWait
+    engine.runAndWait()
 
 
 def process_audio():

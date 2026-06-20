@@ -25,11 +25,14 @@
     # STOW (hardcoded safe position):
     # {"cmd": "stow"} ----------> go to safe stow position for the arm
 
+    #PING
+    # {"cmd": "ping"} ----------> returns {ORION ready, status: ok}
+
 #PCA Channel MAP
 #ch0 = MG996R tendon cable servo 0
 #ch1 = MG996R tendon cable servo 1
 #ch2 = MG996R tendon cable servo 2
-#ch3 = MG996$ lazy susan servo
+#ch3 = MG996R lazy susan servo
 #ch4 = MG90S claw finger servo 0
 #ch5 = MG90S claw finger servo 1
 #ch6 = MG90S claw finger servo 2
@@ -133,7 +136,7 @@ class PCA9685:
         #set servo angle from 0-180
         #0 = 600, 90 = 1500, 180 = 2400
         angle_deg = max(0, min(180, int(angle_deg)))
-        pulse_us = SERVO_MIN_US + (angle_deg / 180) - (SERVO_MAX_US - SERVO_MIN_US)
+        pulse_us = SERVO_MIN_US + (angle_deg / 180) * (SERVO_MAX_US - SERVO_MIN_US)
         off = int(pulse_us * COUNTS_PER_US)
         self.set_pwm(channel, 0, off)
 
@@ -309,7 +312,10 @@ def handle_command(cmd_dict, servos, fsr):
 
         cmd = cmd_dict.get("cmd", "")
 
-        if cmd == "tendon":
+        if cmd == "ping":
+            return {"status": "ok", "msg": "ORION firmware ready"}
+
+        elif cmd == "tendon":
             cable = cmd_dict.get("cable")
             angle = cmd_dict.get("angle")
             if cable is None or angle is None:

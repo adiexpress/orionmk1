@@ -38,46 +38,54 @@ After initial calibration where the cameras are trained on distict marked locati
 ## Setup
 
 ### Requirements
-if you haven't already: download Python (coding language used for this project
-(download using the link below and following the steps)
-'https://www.python.org/downloads/'
+if you haven't already: download Python (coding language used for this project<br>
+(download using the link below and following the steps)<br>
+'https://www.python.org/downloads/'<br>
 
-install all python libraries and utils needed to run ORION
-(run this command in the Terminal CLI)
-'pip install -r requirements.txt'
+install all python libraries and utils needed to run ORION<br>
+(run this command in the Terminal CLI)<br>
+'pip install -r requirements.txt'<br>
 
 ### Pull AI Models
-first, install the ollama desktop app
-(download using the link below and following the steps)
-'https://ollama.com/download'
+first, install the ollama desktop app<br>
+(download using the link below and following the steps)<br>
+'https://ollama.com/download'<br>
 
-after downloading:
-pull both AI models from ollama
-(run these commands in the Terminal CLI)
-'ollama pull qwen2.5:3b-instruct'
-'ollama pull llava-phi3'
+after downloading:<br>
+pull both AI models from ollama<br>
+(run these commands in the Terminal CLI)<br>
+'ollama pull qwen2.5:3b-instruct'<br>
+'ollama pull llava-phi3'<br>
 
 ### Calibrate Cameras
-calibrate each of the 3 camera angles (base, overhead, claw) used for this project
-(run these commands in the Terminal CLI)
-'python calibration.py overhead'
-'python calibration.py base'
-'python calibration.py claw'
+calibrate each of the 3 camera angles (base, overhead, claw) used for this project<br>
+(run these commands in the Terminal CLI)<br>
+'python calibration.py overhead'<br>
+'python calibration.py base'<br>
+'python calibration.py claw'<br>
 
 ### Flash Pico Firmware
-move the firmware from the code compiler to the actual hardware
-Option 1: copy firmware.py to RP2040 using Thonny IDE ('https://thonny.org')
-Option 2: use mpremote  (run this in CLI: 'mpremote connect /dev/ttyACM0 cp firmware.py :main.py')
+1. hold BOOTSEL button on Pico while plugging into USB - mounts as a RPI-RP2 drive<br>
+2. download MicroPython.uf2 from 'https://micropython.org/download/RPI_PICO/'<br>
+3. drag .uf2 onto the RPI-RP2 drive -> Pico will reboot with MicroPython<br>
+4. download Thonny IDE from 'https://thonny.org'<br>
+5. open Thonny -> Tools -> Options -> Interpreter -> MicroPython (Raspberry Pi Pico)<br>
+6. open firmware.py -> File -> Save As -> Raspberry Pi Pico -> save as 'main.py'<br>
+<br>
+Pico runs firmware automatically on every boot up now<br>
+No compliation needed since MicroPython is interpreted<br>
+No external dependencies: all libraries used are MicroPython built-ins<br>
 
 ### Add named locations (Optional)
 run locations.py and input the name of the location + its coordinates to save it to ORION's memory<br>
-(run this command in the Terminal CLI)
+(run this command in the Terminal CLI)<br>
 'python locations.py'
 
 ### Run ORION
-run orion_brain.py and let the magic begin
-(run this command in Terminal CLI)
-'python orion_brain.py
+run orion_brain.py and let the magic begin<br>
+(run this command in Terminal CLI)<br>
+'python orion_brain.py<br>
+<br>
 *NOTE: this file carries alot of weight, running it may be slow, so please have some patience.*
 
 

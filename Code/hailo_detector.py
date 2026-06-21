@@ -19,7 +19,7 @@ coco_classes = [
 ]
     
 if is_pi:
-    from hailo_platform import (
+    from Code.hailo_platform import (
         HEF, Device, VDevice, 
         InputVStreamParams, OutputVStreamParams,
         FormatType, HailoStreamInterface,

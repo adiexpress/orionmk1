@@ -48,7 +48,7 @@ class CameraSystem:
         """
         for attr, index, name in [
             ("overhead_cam", 0, "Overhead"),
-            ("base_cam", 1, "Base")
+            ("base_cam", 1, "Base"),
             ("claw_cam", 2, "Claw")
         ]:
             cam = cv2.VideoCapture(index)

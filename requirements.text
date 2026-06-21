@@ -5,7 +5,6 @@ openWakeWord
 ultralytics
 
 #Camera
-picamera2; platform_machine=="aarch64"
 numpy
 opencv-python
 

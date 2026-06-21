@@ -7,9 +7,6 @@ import platform
 is_pi = platform.machine() in ("aarch64" , "armv7l")
 is_mac = platform.system() == "Darwin"
 
-#camera
-use_picamera = is_pi
-
 #ai models used
 whisper_model = "tiny.en" if is_pi else "base"
 ollama_model = "qwen2.5:3b-instruct"
@@ -43,9 +40,8 @@ serial_command = not is_pi #if on mac, print command, if on pi, send command
 
 #hardware geometry
 base_height = 76.2 #3inches in mm
-pole_height = 304.8 #12 inches in mm (where camera will hang)
-camera_height = pole_height + base_height #roughly 15 inches above the desk
-
+pole_height = 203.3 #8 inches in mm (where camera will hang)
+camera_height = pole_height + base_height #roughly 11 inches above the desk
 
 #camera detection
 detection_confidence = 0.5

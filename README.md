@@ -2,6 +2,9 @@ Hello All who come to this project
 
 This is the beginnings of Project O.R.I.O.N, which stands for Object Retrieval and Intelligent Operating Network
 
+<img width="1253" height="830" alt="Group 1" src="https://github.com/user-attachments/assets/96b58223-2a38-473c-aa94-83427e2ab4d0" />
+
+
 ORION is a ceiling-mounted robot arm system designed to assist at a workstation. Inspired by Doctor Octopus from Spider-Man, it features a flexible tendon-driven tentacle spine arm with a 3-jaw gripper, 3 wide-angle AI cameras linked together, local voice recognition, and object detection — all running fully offline on a Raspberry Pi 5 with a Raspberry Pi AI HAT+ (Hailo-8 NPU, 26 TOPS).
 
  The hub is a wide shallow tray (Pi and HAT side by side) keeping hub height under 1.7 inches, leaving 5.8 inches of clearance above the monitors. It detaches via a quick-release plate and runs standalone on a camera tripod from an Anker power bank.
@@ -15,13 +18,21 @@ This project is driven on a few AI Models: Whisper, by OpenAI for the language t
 
 Orion runs on Qwen 2.5 3B parameters version by Alibaba and essentially it is the framework for all the reasoning and computing done by the model. 
 
-The camera system runs on 2 USB 2.0 Cameras (U20-Cam 720P's) and 1 CSI Camera Module (IMX219) to help with object tracking/detection and also obstacle avoidance.
+The camera system runs on 3 USB 2.0 Cameras (1080P 130 degree rotation) to help with object tracking/detection and also obstacle avoidance.
 After initial calibration where the cameras are trained on distict marked locations so that they can make their distance measurements, the tri-camera system uses triangulation to gather measurements from each of the 3 FOV ranges that it has. Using this, the ORION arm has almost 360 degree FOV. 
+
+We created this project to help future engineers, like my teammate and I, strive in the workplace when no one else is there to help. Personally, I have been there many times. When it feels like the project that I am building needs 3 hands. Now, ORION is that 3rd hand.<br>
+ORION acts like a personal desktop assistant that can physically help you with tasks like holding up objects, putting unnecessary tools
+away, or even holding up a flashlight for those dark corners you can never see into. ORION is more than just an average robotic arm, however. It can even act as a friend. With its built-in AI voice-chat feature, you can have conversations about whatever weird things you like and it can answer the most redundant of questions.
+
+## DISCLAIMER:
+Due to hardware deficiency, we are unable to set up the "Hey ORION" feature.<br>
+Instead, it is "Hey Jarvis" for right now, but once hardware arrives, it will be changed
 
 ## How the pipeline works:
 
 1. Orion starts up and greets the user
-2. Orion asks the user for the wake word (in this case it will be "Hey Orion")
+2. Orion asks the user for the wake word (in this case it will be "Hey Jarvis")
 3. The user either speaks the wake word or waits until they require the assistance of Orion
 4. After receiving the wake word, Orion then asks the user for a command from which they have a few preset options to choose from:
    - grab: grabs an object that must be specified by the user
@@ -34,6 +45,15 @@ After initial calibration where the cameras are trained on distict marked locati
    - chat: A chat feature used when the user just wants a buddy to talk to or to ask general questions
    - where is: gives the location/coordinates of an object that must be specified by the user
 5. User requests which ever command they require in their work and Orion parses it and fulfills the command
+
+## Voice Commands
+
+ORION has a plethora of preset commands:<br>
+
+"Hey Jarvis, grab my phone"<br>
+"Hey Jarvis, put it in the bin"<br>
+"Hey Jarvis, "What do you see"<br>
+etc..
 
 ## Firmware Setup
 
@@ -375,6 +395,8 @@ Then Attach claw base B like so, making sure to put a Rod End Spacer through its
 
 <img width="854" height="1016" alt="image" src="https://github.com/user-attachments/assets/ce237db5-87cc-4074-b1c3-2b4fe1189ede" />
 
+Take one set of the ptfe tubing and attach it to the claw finger where the hole is made, and take the other set and tie a knot to once they both go through all the middle segments. At the bottom, connect the tubing from the fingers and connect it to the winch on the MG90S servo and take the other three and connect it to the MG996R servo winches (through the center hole of the servo hub) This is the tensioning that will control the arm.
+
 Once you attach that to the rest of the parts (from the last segment of the arm, using the same technique with the spacers to attach the rod end bearing as before), you can run the wires from the FSR sensors down into the E-Hub and make sure your wiring matches this diagram, using cable tie mounts as needed.
 <img width="1567" height="880" alt="image" src="https://github.com/user-attachments/assets/7d83656e-8657-4869-96ca-78d6bcf3d311" />
 
@@ -385,5 +407,10 @@ or the unofficial one if that is what you prefer, as it is simpler.
 Finally, you will have a finished ORION:
 
 <img width="787" height="1002" alt="image" src="https://github.com/user-attachments/assets/95ccf0ee-234b-4085-adc0-694523dc218a" />
+
+
+## BOM:
+
+[BoM - Sheet1.csv](https://github.com/user-attachments/files/29170802/BoM.-.Sheet1.csv)
 
 

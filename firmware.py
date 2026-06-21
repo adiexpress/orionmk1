@@ -45,7 +45,7 @@
 #usb = serial to pi 5
 
 import sys
-from machine import Pin, I2C, ADC
+from Code.machine import Pin, I2C, ADC
 import time
 import json
 import select

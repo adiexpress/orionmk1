@@ -5,13 +5,13 @@
 import json
 import cv2
 import multiprocessing as mp
-from voice import voice_command
-from parser import parse_command
-from speech import speak
-from visiondescribe import describe_webcam
+from Code.voice import voice_command
+from Code.parser import parse_command
+from Code.speech import speak
+from Code.visiondescribe import describe_webcam
 import time
 import sounddevice as sd
-from serial_controller import controller #serial_controller
+from Code.serial_controller import controller #serial_controller
 
 
 #global world state, all parse calls read from this so the arm always has a current position
@@ -102,7 +102,7 @@ def handle_action(action, claw_frame = None):
 
     elif action_type == "where_is":
         
-        from locations import get_locations
+        from Code.locations import get_locations
         
         target = action.get("target", "")
         coords = get_locations(target)
@@ -202,8 +202,8 @@ def main():
         return
 
 #camera loop with tri camera setup (replace detect_objects with multi_detector)
-from camera import CameraSystem
-from multi_detector import run_detection, load_all_homographies
+from Code.camera import CameraSystem
+from Code.multi_detector import run_detection, load_all_homographies
 
 def camera_loop(state_queue, claw_queue):
     
@@ -255,7 +255,7 @@ def camera_loop(state_queue, claw_queue):
 
 
 if __name__ == "__main__":
-    from config import start_method
+    from Code.config import start_method
     mp.set_start_method(start_method, force = True)
     main()
 

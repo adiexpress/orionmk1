@@ -2,8 +2,7 @@ Hello All who come to this project
 
 This is the beginnings of Project O.R.I.O.N, which stands for Object Retrieval and Intelligent Operating Network
 
-<img width="1253" height="830" alt="Group 1" src="https://github.com/user-attachments/assets/96b58223-2a38-473c-aa94-83427e2ab4d0" />
-
+<img width="1244" height="830" alt="Group 1-3" src="https://github.com/user-attachments/assets/39eb01a0-8b20-4a39-95c1-0288d550b705" />
 
 ORION is a ceiling-mounted robot arm system designed to assist at a workstation. Inspired by Doctor Octopus from Spider-Man, it features a flexible tendon-driven tentacle spine arm with a 3-jaw gripper, 3 wide-angle AI cameras linked together, local voice recognition, and object detection — all running fully offline on a Raspberry Pi 5 with a Raspberry Pi AI HAT+ (Hailo-8 NPU, 26 TOPS).
 
@@ -12,7 +11,6 @@ ORION is a ceiling-mounted robot arm system designed to assist at a workstation.
 The spine is cable-tendon driven — 3 Dyneema UHMWPE cables (65-80lb, ~0.4mm) run through PTFE-lined channels in 9 triangular PETG segments, pulled by 3 MG996R base servos for full 3D motion. Each segment is an equilateral triangle (70mm sides, 35mm body) with M4 RC rod-end ball joints alternating 90 degrees per segment. Total reach: ~19.5 inches
 
 The sensors that are used in this project are the FSR402 pressure sensors on the tips of the fingers of the claw
-
 
 This project is driven on a few AI Models: Whisper, by OpenAI for the language transcription when a user asks a question, YOLOV8 by Ultralytics for the object tracking and detection, OpenWakeWord which is the key tool behind the "Hey ORION" activation call, and LLaVA Phi 3 for the live object description in the webcam whenever a user uses the "describe" action
 
@@ -25,10 +23,9 @@ We created this project to help future engineers, like my teammate and I, strive
 ORION acts like a personal desktop assistant that can physically help you with tasks like holding up objects, putting unnecessary tools
 away, or even holding up a flashlight for those dark corners you can never see into. ORION is more than just an average robotic arm, however. It can even act as a friend. With its built-in AI voice-chat feature, you can have conversations about whatever weird things you like and it can answer the most redundant of questions.
 
-## DISCLAIMER:
-Due to hardware deficiency, we are unable to set up the "Hey ORION" feature.<br>
-Instead, it is "Hey Jarvis" for right now, but once hardware arrives, it will be changed
-
+## DISCLAIMER
+Due to hardware deficiency, the custom "Hey ORION" wake word has not been trained yet. The system currently uses "Hey Jarvis" (a pre-trained OpenWakeWord model). Once hardware arrives, a custom model will be trained using OpenWakeWord's training pipeline and swapped in with a single config change.
+<br>
 ## How the pipeline works:
 
 1. Orion starts up and greets the user
@@ -46,16 +43,18 @@ Instead, it is "Hey Jarvis" for right now, but once hardware arrives, it will be
    - where is: gives the location/coordinates of an object that must be specified by the user
 5. User requests which ever command they require in their work and Orion parses it and fulfills the command
 
-## Voice Commands
+## AI Pipelines
 
-ORION has a plethora of preset commands:<br>
 
-"Hey Jarvis, grab my phone"<br>
-"Hey Jarvis, put it in the bin"<br>
-"Hey Jarvis, "What do you see"<br>
-etc..
+| Layer | Model | Hardware it Runs On |
+|---|---|---|
+| Wake word | OpenWakeWord (hey_jarvis) | Pi 5 CPU |
+| Transcription | Whisper tiny.en | Pi 5 CPU |
+| Command parsing | Qwen2.5-coder 3B | Pi 5 CPU via Ollama |
+| Object detection | YOLOv8n | Hailo-8 NPU (26 TOPS) |
+| Visual Q&A | LLaVA-phi3 | Pi 5 CPU via Ollama |
 
-## Firmware Setup
+---
 
 ### Requirements
 if you haven't already: download Python (coding language used for this project<br>
@@ -84,10 +83,14 @@ pull both AI models from ollama<br>
 ### Calibrate Cameras
 calibrate each of the 3 camera angles (base, overhead, claw) used for this project<br>
 <br>
+point each camera at a flat surface with 4 known real world coordinates<br>
+<br>
 (run these commands in the Terminal CLI)<br>
 'python calibration.py overhead'<br>
 'python calibration.py base'<br>
 'python calibration.py claw'<br>
+<br>
+then, click the 4 points in this order: top-left, top-right, bottom-left, bottom-right and press 'S' to save them<br>
 
 ### Flash Pico Firmware
 1. hold BOOTSEL button on Pico while plugging into USB - mounts as a RPI-RP2 drive<br>
@@ -115,6 +118,35 @@ run orion_brain.py and let the magic begin<br>
 <br>
 *NOTE: this file carries alot of weight, running it may be slow, so please have some patience.*
 
+## How to use ORION
+
+**Basic Workflow**
+
+## USE THESE ONLY AFTER RUNNING ALL SETUP STEPS ABOVE
+
+1. Say **'Hey Jarvis'** - ORION wakes up and beeps
+2. Say your command - if you stop talking, the 'silence detection feature' will cut you off, so make sure you have an exact command
+3. ORION will then transcribe, parse, detect, and act out your command if its necessary
+
+**Avaliable Commands:**
+"grab the ____" --> ORION will find your object via camera, extend its arm and pick it up<br>
+<br>
+"put it in the bin" ---> ORION will move its held object into the saved position named "bin" by the user<br>
+<br>
+"drop it" ---> ORION will drop whatever it is holding in its current location<br>
+<br>
+"stow the arm" ---> ORION will fold its arm to a predetermined safe resting position<br>
+<br>
+"what do you see" ---> Describes its surroundings using the claw camera with LLaVA vision AI<br>
+<br>
+"where is my ____?" ---> returns coordinates of the named object<br>
+<br>
+"how do magnets work?" ---> this is just a random question, you can ask ORION things like this, and it will respond like a normal AI agent<br>
+<br>
+**ORION understands natural language** - for the commands above, you can phrase them in almost any way you like<br>
+<br>
+For commands/questions ORION does not understand, it will use the CLARIFY command, where ORION will ask the user to clarify where the misconception was made<br>
+<br>
 ## Hardware Setup
 
 For the shafts, please cut them according to the necessary length as you cut, as plastic expansion might change how long your shaft cuts should be.
@@ -411,6 +443,43 @@ Finally, you will have a finished ORION:
 
 
 ## BOM:
+
+
+* FSR Sensor
+* Steel Extension
+* Plastic Rod-Ends
+* MG90S
+* Fishing Line (65 LBS @ 300 YDS
+* USB Cameras
+* Buck/Voltage Resistor
+* 65W Power Bank
+* PWM Servo Driver
+* Raspberry Pi Pico (RP2040 Microcontroller)
+* Female-Female Jumper Wires
+* 1-3 Connector
+* 1-2 Connector
+* External Speaker
+* Raspberry Pi Pico Headers
+* Raspberry Pi 5 Headers
+* Lazy Susan
+* AI HAT+ with Hailo-8 NPU
+* External Mic for Pi
+* Raspberry Pi 5
+* M2, M3, M4 Screws
+* M2, M3, M4 Screw Heat-set inserts
+* Screw spacers
+* Cable-tie mounts
+* PTFE Tubing
+* 10K Ohm Resistors
+* USB-A to USB-A Cable
+* USB-C to USB-C Cable
+* USB-A Male to 2-Pin Pigtail exposed cable
+* CA glue and activator
+* 5mm Shafts
+* 3mm Shafts
+* PLA Filament
+* TPU Filament
+* PETG Filament
 
 [BoM - Sheet1.csv](https://github.com/user-attachments/files/29170802/BoM.-.Sheet1.csv)
 

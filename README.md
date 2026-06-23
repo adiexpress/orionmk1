@@ -122,6 +122,7 @@ For the shafts, please cut them according to the necessary length as you cut, as
 ### When 3D printing:
 For ease of printing, all objects are formated as follows: "Object name xNumber of times needed." For example: "Camera Mount x2" means you must print the camera mount twice.
 All objects are in PLA filament, with the exception of the parts "Claw TPU Finger," which are in TPU, and "Claw PETG Tip," which are in PETG. 
+Print settings are recommended to be 15-20% infill with supports enabled and gyroid infill.
 
 ### Requirements
 * All 3D printed objects 
@@ -131,7 +132,7 @@ All objects are in PLA filament, with the exception of the parts "Claw TPU Finge
 * All parts and materials dictated by the BOM
 * Clippers
 
-### Assembly over veiw
+### Assembly overveiw
 We will progress through creating ORION in the following order
 
 1. Electronics Hub

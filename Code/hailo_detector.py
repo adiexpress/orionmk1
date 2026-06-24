@@ -2,7 +2,7 @@
 #going to upgrade to the hailo v8 version
 import cv2
 import numpy as np
-from config import is_pi, detection_confidence, priority_objects, name_mapping
+from Code.config import is_pi, detection_confidence, priority_objects, name_mapping
 
 #coco classes (all 80)
 coco_classes = [

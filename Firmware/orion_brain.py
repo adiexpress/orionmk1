@@ -2,6 +2,10 @@
 #main file that wires everything together(voice, parsing, action handling)
 #run this file to start orion
 
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))#reads file one layer above to import from 'Code' folder
+
 import json
 import cv2
 import multiprocessing as mp

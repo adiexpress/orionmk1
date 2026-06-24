@@ -1,6 +1,6 @@
-from hailo_detector import detect_objects
-from camera import CameraSystem
-from config import detection_confidence
+from Code.hailo_detector import detect_objects
+from Code.camera import CameraSystem
+from Code.config import detection_confidence
 
 def merge_world_states(states: list[dict]) -> dict:
     """
@@ -51,7 +51,7 @@ def merge_world_states(states: list[dict]) -> dict:
 def run_detection(camera_system: CameraSystem, homographies: dict) -> tuple: 
     #Run detection on all 3 cameras and return merged world state.
 
-    from conversion import pixel_conversion, box_center 
+    from Code.conversion import pixel_conversion, box_center 
 
     frames = camera_system.get_all_frames()
     annotated_frames = {}

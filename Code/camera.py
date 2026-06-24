@@ -1,5 +1,5 @@
 import cv2
-from config import is_pi
+from Code.config import is_pi
 
 class CameraSystem:
     def __init__(self):

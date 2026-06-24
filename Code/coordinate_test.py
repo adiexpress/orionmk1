@@ -1,6 +1,6 @@
 #running a small test run to see if everything works
 
-from conversion import load_homo_matrix, pixel_conversion
+from Code.conversion import load_homo_matrix, pixel_conversion
 import json
 
 H = load_homo_matrix()

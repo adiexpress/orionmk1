@@ -3,7 +3,7 @@
 import requests
 import json
 import re
-from locations import get_locations
+from Code.locations import get_locations
 
 ollama_port = "http://localhost:11434/api/generate"
 

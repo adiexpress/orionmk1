@@ -1,7 +1,7 @@
 from faster_whisper import WhisperModel
 import numpy as np
 import sounddevice as sd
-from config import whisper_model as whisper_size
+from Code.config import whisper_model as whisper_size
 
 language = "en" #english only model (may support other languages at anothet time)
 
@@ -32,7 +32,7 @@ def transcribe(audio_array):
 
 def test_transcription():
    
-    from microphone import record_audio
+    from Code.microphone import record_audio
     
     try:
         print("\nTranscription test started")

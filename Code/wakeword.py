@@ -11,10 +11,10 @@ except ImportError:
 import numpy as np
 import sounddevice as sd
 from openwakeword.model import Model
-from microphone import sample_rate, chunk_size
+from Code.microphone import sample_rate, chunk_size
 import queue
 import threading
-from speech import speak
+from Code.speech import speak
 
 _chunk = chunk_size
 

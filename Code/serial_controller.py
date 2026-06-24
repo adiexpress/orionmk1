@@ -1,8 +1,8 @@
 import json
 import time
 import threading
-from config import serial_port, serial_baud, serial_command
-from kinematics import desk_to_motor_functions
+from Code.config import serial_port, serial_baud, serial_command
+from Code.kinematics import desk_to_motor_functions
 
 try:
     import serial

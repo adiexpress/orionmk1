@@ -1,7 +1,7 @@
 # # combination of wakeword.py, transcirption.py and all of the other util files
 
-from wakeword import listen_for_audio, beep
-from transcription import transcribe
+from Code.wakeword import listen_for_audio, beep
+from Code.transcription import transcribe
 import time
 import sounddevice as sd
 

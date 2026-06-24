@@ -19,9 +19,19 @@ Orion runs on Qwen 2.5 3B parameters version by Alibaba and essentially it is th
 The camera system runs on 3 USB 2.0 Cameras (1080P 130 degree rotation) to help with object tracking/detection and also obstacle avoidance.
 After initial calibration where the cameras are trained on distict marked locations so that they can make their distance measurements, the tri-camera system uses triangulation to gather measurements from each of the 3 FOV ranges that it has. Using this, the ORION arm has almost 360 degree FOV. 
 
-We created this project to help future engineers, like my teammate and I, strive in the workplace when no one else is there to help. Personally, I have been there many times. When it feels like the project that I am building needs 3 hands. Now, ORION is that 3rd hand.<br>
-ORION acts like a personal desktop assistant that can physically help you with tasks like holding up objects, putting unnecessary tools
-away, or even holding up a flashlight for those dark corners you can never see into. ORION is more than just an average robotic arm, however. It can even act as a friend. With its built-in AI voice-chat feature, you can have conversations about whatever weird things you like and it can answer the most redundant of questions.
+## The Problem
+We created this project to help future engineers, like my teammate and I, strive in the workplace when no one else is there to help. 
+We built ORION because we've both been there. 
+Spending late nights building something extraordinary that could change the world, but it feels like building it requires three hands. 
+
+**ORION was made to be that 3rd hand.**
+
+ORION is the answer to that. It acts like a personal desktop assistant that can physically help you with tasks like holding up objects, putting unnecessary tools
+away, or even holding up a flashlight for those dark corners you can never see into. ORION is more than just an average robotic arm, however. It can even act as a friend. With its built-in AI voice-chat feature, you can have conversations about whatever weird things you like and it can answer the most redundant of questions. 
+
+Many of us engineers have come to the realization that the biggest bottleneck in this field isn't knowledge or skill, but rather - its bandwidth. What my partner and I needed was a third hand that doesn't need a break, never gets tired, and doesn't complain.
+
+## We built what we needed and we hope someone like us needs it too
 
 ## DISCLAIMER
 Due to hardware deficiency, the custom "Hey ORION" wake word has not been trained yet. The system currently uses "Hey Jarvis" (a pre-trained OpenWakeWord model). Once hardware arrives, a custom model will be trained using OpenWakeWord's training pipeline and swapped in with a single config change.

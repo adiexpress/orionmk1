@@ -19,7 +19,7 @@ Orion runs on Qwen 2.5 3B parameters version by Alibaba and essentially it is th
 The camera system runs on 3 USB 2.0 Cameras (1080P 130 degree rotation) to help with object tracking/detection and also obstacle avoidance.
 After initial calibration where the cameras are trained on distict marked locations so that they can make their distance measurements, the tri-camera system uses triangulation to gather measurements from each of the 3 FOV ranges that it has. Using this, the ORION arm has almost 360 degree FOV. 
 
-## The Problem
+## The Problem and our motivation to create ORION
 We created this project to help future engineers, like my teammate and I, strive in the workplace when no one else is there to help. 
 We built ORION because we've both been there. 
 Spending late nights building something extraordinary that could change the world, but it feels like building it requires three hands. 
@@ -32,6 +32,18 @@ away, or even holding up a flashlight for those dark corners you can never see i
 Many of us engineers have come to the realization that the biggest bottleneck in this field isn't knowledge or skill, but rather - its bandwidth. What my partner and I needed was a third hand that doesn't need a break, never gets tired, and doesn't complain.
 
 ## We built what we needed and we hope someone like us needs it too
+<br>
+
+## Our Motivation
+<br>
+Most robotics projects are built in labs, with teams with almost too large of a wallet. In contrast, ORION was built with 2 people, over nights and weekends, communicating async over schedules that seemed to never overlap
+<br>
+That constraint became our main idea for design, ORION had to be simple enough for two people to design and also others to easily recrate, but also powerful enough to actually keep up with our quick engineering minds 
+<br>
+We decided to make it run offline because we could never guarantee internet, it had to run from voice because our hands were usually always full, and we had to make it cost-effective because our budget was tight.
+<br>
+Every decision in this project came from a real constraint we had to come across while building it, combined with our high engineering standards
+<br>
 
 ## DISCLAIMER
 Due to hardware deficiency, the custom "Hey ORION" wake word has not been trained yet. The system currently uses "Hey Jarvis" (a pre-trained OpenWakeWord model). Once hardware arrives, a custom model will be trained using OpenWakeWord's training pipeline and swapped in with a single config change.

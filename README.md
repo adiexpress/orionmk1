@@ -66,7 +66,10 @@ Due to hardware deficiency, the custom "Hey ORION" wake word has not been traine
 
 ---
 
-### Requirements
+##Build and Run Guide
+
+### Software/Firmware setup requirements
+
 if you haven't already: download Python (coding language used for this project<br>
 <br>
 (download using the link below and following the steps)<br>
@@ -452,8 +455,13 @@ Finally, you will have a finished ORION:
 <img width="787" height="1002" alt="image" src="https://github.com/user-attachments/assets/95ccf0ee-234b-4085-adc0-694523dc218a" />
 
 
-## BOM:
+## Wiring
 
+Although already listed in the build guide, we thought it might be helpful to add the wiring image here for easy referral.
+
+<img width="1567" height="880" alt="image" src="https://github.com/user-attachments/assets/7d83656e-8657-4869-96ca-78d6bcf3d311" />
+
+## BOM:
 
 * FSR Sensor
 * Steel Extension
@@ -493,4 +501,6 @@ Finally, you will have a finished ORION:
 
 [BoM - Sheet1.csv](https://github.com/user-attachments/files/29170802/BoM.-.Sheet1.csv)
 
+---
+Thank you so much for checking out O.R.I.O.N!
 

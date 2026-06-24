@@ -36,6 +36,7 @@ Many of us engineers have come to the realization that the biggest bottleneck in
 ## DISCLAIMER
 Due to hardware deficiency, the custom "Hey ORION" wake word has not been trained yet. The system currently uses "Hey Jarvis" (a pre-trained OpenWakeWord model). Once hardware arrives, a custom model will be trained using OpenWakeWord's training pipeline and swapped in with a single config change.
 <br>
+
 ## How the pipeline works:
 
 1. Orion starts up and greets the user
@@ -129,7 +130,12 @@ run orion_brain.py and let the magic begin<br>
 (run this command in Terminal CLI)<br>
 'python orion_brain.py<br>
 <br>
-*NOTE: this file carries alot of weight, running it may be slow, so please have some patience.*
+
+To stop the processes at any time, press 'Ctrl+C'<br>
+* 1st time pressing Ctrl+C will stop the voice processes
+* 2nd time pressing Ctrl+C will stop the camera processes
+<br>
+**NOTE: this file carries alot of weight, running it may be slow, so please have some patience.**
 
 ## How to use ORION
 

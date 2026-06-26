@@ -49,8 +49,6 @@ Every decision in this project came from a real constraint we had to come across
 Due to hardware deficiency, the custom "Hey ORION" wake word has not been trained yet. The system currently uses "Hey Jarvis" (a pre-trained OpenWakeWord model). Once hardware arrives, a custom model will be trained using OpenWakeWord's training pipeline and swapped in with a single config change.
 <br>
 
-We were not able to upload a f3d file, since fusion would crash everytime we made an attempt to export anything aside from a step file.
-
 ## How the pipeline works:
 
 1. Orion starts up and greets the user
